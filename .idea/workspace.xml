@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoTestManager">
+    <enabled-run-configurations>
+      <run-configuration type="CargoCommandRunConfiguration" name="Test ex_3_single_byte_xor_cipher::test" />
+      <run-configuration type="CargoCommandRunConfiguration" name="Test ex_1_hex_to_b64::test" />
+    </enabled-run-configurations>
+  </component>
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/set-1/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="449636ef-4c22-47f7-ae12-6b778ae14459" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/cryptopals.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/set-1/res/ex_4.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/set-1/src/ex_1_hex_to_b64.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/set-1/src/ex_2_fixed_xor.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/set-1/src/ex_3_single_byte_xor_cipher.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/set-1/src/ex_4_detect_single_character_xor.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/set-1/src/shared.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Rust File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="2h0mb8s7" />
+  </component>
+  <component name="ProjectId" id="1eNOa9ghXwwhMwZox4LrnTNU7pI" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+    <property name="settings.editor.selected.configurable" value="language.rust.cargo" />
+  </component>
+  <component name="RunManager" selected="Cargo Command.Test ex_4_detect_single_character_xor::test::test_decipher">
+    <configuration name="Test ex_3_single_byte_xor_cipher::test" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test --package set-1 --lib ex_3_single_byte_xor_cipher::test" />
+      <option name="allFeatures" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test ex_3_single_byte_xor_cipher::test::test_decipher" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test --package set-1 --lib ex_3_single_byte_xor_cipher::test::test_decipher -- --exact" />
+      <option name="allFeatures" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test ex_3_single_byte_xor_cipher::test::test_sec" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test --package set-1 --lib ex_3_single_byte_xor_cipher::test::test_sec -- --exact" />
+      <option name="allFeatures" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test ex_4_detect_single_character_xor::test" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test --package set-1 --lib ex_4_detect_single_character_xor::test" />
+      <option name="allFeatures" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test ex_4_detect_single_character_xor::test::test_decipher" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="channel" value="DEFAULT" />
+      <option name="command" value="test --package set-1 --lib ex_4_detect_single_character_xor::test::test_decipher -- --exact" />
+      <option name="allFeatures" value="false" />
+      <option name="emulateTerminal" value="false" />
+      <option name="backtrace" value="SHORT" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <envs />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Cargo Command.Test ex_4_detect_single_character_xor::test::test_decipher" />
+        <item itemvalue="Cargo Command.Test ex_3_single_byte_xor_cipher::test::test_sec" />
+        <item itemvalue="Cargo Command.Test ex_3_single_byte_xor_cipher::test::test_decipher" />
+        <item itemvalue="Cargo Command.Test ex_4_detect_single_character_xor::test" />
+        <item itemvalue="Cargo Command.Test ex_3_single_byte_xor_cipher::test" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="RustProjectSettings">
+    <option name="runExternalLinterOnTheFly" value="true" />
+    <option name="runRustfmtOnSave" value="true" />
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="449636ef-4c22-47f7-ae12-6b778ae14459" name="Default Changelist" comment="" />
+      <created>1594158644237</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1594158644237</updated>
+      <workItem from="1594158645757" duration="20436000" />
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="138" y="56" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1594206172985">
+      <screen x="0" y="26" width="1360" height="742" />
+    </state>
+    <state x="138" y="56" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.26.1360.742@0.26.1360.742" timestamp="1594206172985" />
+    <state x="419" y="200" width="517" height="400" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1594204314500">
+      <screen x="0" y="26" width="1360" height="742" />
+    </state>
+    <state x="419" y="200" width="517" height="400" key="#com.intellij.fileTypes.FileTypeChooser/0.26.1360.742@0.26.1360.742" timestamp="1594204314500" />
+    <state width="1314" height="193" key="GridCell.Tab.0.bottom" timestamp="1594229682459">
+      <screen x="0" y="26" width="1360" height="742" />
+    </state>
+    <state width="1314" height="193" key="GridCell.Tab.0.bottom/0.26.1360.742@0.26.1360.742" timestamp="1594229682459" />
+    <state width="1314" height="193" key="GridCell.Tab.0.center" timestamp="1594229682459">
+      <screen x="0" y="26" width="1360" height="742" />
+    </state>
+    <state width="1314" height="193" key="GridCell.Tab.0.center/0.26.1360.742@0.26.1360.742" timestamp="1594229682459" />
+    <state width="1314" height="193" key="GridCell.Tab.0.left" timestamp="1594229682459">
+      <screen x="0" y="26" width="1360" height="742" />
+    </state>
+    <state width="1314" height="193" key="GridCell.Tab.0.left/0.26.1360.742@0.26.1360.742" timestamp="1594229682459" />
+    <state width="1314" height="193" key="GridCell.Tab.0.right" timestamp="1594229682459">
+      <screen x="0" y="26" width="1360" height="742" />
+    </state>
+    <state width="1314" height="193" key="GridCell.Tab.0.right/0.26.1360.742@0.26.1360.742" timestamp="1594229682459" />
+    <state x="176" y="33" width="1007" height="734" key="SettingsEditor" timestamp="1594196880961">
+      <screen x="0" y="26" width="1360" height="742" />
+    </state>
+    <state x="176" y="33" width="1007" height="734" key="SettingsEditor/0.26.1360.742@0.26.1360.742" timestamp="1594196880961" />
+  </component>
+</project>

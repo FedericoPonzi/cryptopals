@@ -3,13 +3,12 @@ use std::path::PathBuf;
 
 fn detect_single_character_xor(file: PathBuf) -> Vec<u8> {
     let file = std::fs::read_to_string(&file).unwrap();
-
     file.split('\n')
         .into_iter()
         .map(hex::decode)
         .filter_map(Result::ok)
         .map(single_byte_xor_dechiper)
-        .fold((f64::MAX, Vec::new()), |curr, new| {
+        .fold((f64::MAX, Vec::new(), 0), |curr, new| {
             if curr.0 > new.0 {
                 new
             } else {

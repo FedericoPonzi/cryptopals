@@ -1,5 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_imports)]
 mod ex_6_break_repeating_key_xor;
-
 #[macro_use]
 extern crate hex_literal;
 #[macro_use]

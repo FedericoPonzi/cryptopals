@@ -1,26 +1,29 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::ops::BitXor;
 
-pub fn xor(a: Vec<u8>, b: u8) -> Vec<u8> {
-    a.into_iter()
+pub fn xor<'a, T: AsRef<[u8]>>(a: T, b: u8) -> Vec<u8> {
+    a.as_ref()
+        .iter()
         .enumerate()
-        .map(|(i, v)| b.bitxor(v))
+        .map(|(i, v)| b.bitxor(*v))
         .collect()
 }
 
+/// Caculate frequency of letters in the input
 pub(crate) fn calculate_frequency(input: Vec<u8>) -> HashMap<u8, f64> {
-    let mut LETTERS_FREQUENCY: HashMap<u8, u64> = (b'a'..=b'z').map(|c| (c, 0)).collect();
+    let mut letters_frequency: HashMap<u8, u64> = (b'a'..=b'z').map(|c| (c, 0)).collect();
     input.iter().for_each(|ch| {
-        if LETTERS_FREQUENCY.contains_key(ch) {
-            *LETTERS_FREQUENCY.get_mut(ch).unwrap() += 1
+        if letters_frequency.contains_key(ch) {
+            *letters_frequency.get_mut(ch).unwrap() += 1
         }
     });
-    LETTERS_FREQUENCY
+    letters_frequency
         .into_iter()
-        .map(|(k, v)| (k, (v as f64 / input.len() as f64) * 100f64))
+        .map(|(lett, freq)| (lett, (freq as f64 / input.len() as f64) * 100f64))
         .collect()
 }
 
+/// Calculates the difference between the input map and the reference letter's frequency.
 pub(crate) fn calculate_difference(
     input: HashMap<u8, f64>,
     LETTERS_FREQUENCY: HashMap<u8, f64>,
@@ -32,10 +35,12 @@ pub(crate) fn calculate_difference(
                 .get(&letter)
                 .map(|def_freq| (def_freq - freq).abs())
         })
+        .filter(|freq| *freq > 0f64)
         .sum()
 }
 
-pub(crate) fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>) {
+/// Returns the confidence score, the decrypted text and the key.
+pub(crate) fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>, u8) {
     let LETTERS_FREQUENCY = hashmap! {
         b'a' => 8.497,
         b'b' => 1.492,
@@ -64,14 +69,15 @@ pub(crate) fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>) {
         b'y' => 1.994,
         b'z' => 0.077
     };
-    (b'0'..=b'f')
+    (0x00..0xff)
         .map(|c| {
             let decrypted: Vec<u8> = xor(input.clone(), c);
             let frequency = calculate_frequency(decrypted.clone());
-            let diff = calculate_difference(frequency, LETTERS_FREQUENCY.clone());
-            (diff, decrypted)
+            // Smaller the distance, the better
+            let distance = calculate_difference(frequency.clone(), LETTERS_FREQUENCY.clone());
+            (distance, decrypted, c)
         })
-        .fold((f64::MAX, Vec::new()), |curr, new| {
+        .fold((f64::MAX, Vec::new(), 0), |curr, new| {
             if curr.0 > new.0 {
                 new
             } else {

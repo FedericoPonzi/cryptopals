@@ -5,7 +5,7 @@ pub fn xor<'a, T: AsRef<[u8]>>(a: T, b: u8) -> Vec<u8> {
     a.as_ref()
         .iter()
         .enumerate()
-        .map(|(i, v)| b.bitxor(*v))
+        .map(|(_i, v)| b.bitxor(*v))
         .collect()
 }
 
@@ -26,12 +26,12 @@ pub(crate) fn calculate_frequency(input: Vec<u8>) -> HashMap<u8, f64> {
 /// Calculates the difference between the input map and the reference letter's frequency.
 pub(crate) fn calculate_difference(
     input: HashMap<u8, f64>,
-    LETTERS_FREQUENCY: HashMap<u8, f64>,
+    letters_frequency: HashMap<u8, f64>,
 ) -> f64 {
     input
         .into_iter()
         .flat_map(|(letter, freq)| {
-            LETTERS_FREQUENCY
+            letters_frequency
                 .get(&letter)
                 .map(|def_freq| (def_freq - freq).abs())
         })
@@ -41,7 +41,7 @@ pub(crate) fn calculate_difference(
 
 /// Returns the confidence score, the decrypted text and the key.
 pub(crate) fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>, u8) {
-    let LETTERS_FREQUENCY = hashmap! {
+    let letters_frequency = hashmap! {
         b'a' => 8.497,
         b'b' => 1.492,
         b'c' => 2.202,
@@ -74,7 +74,7 @@ pub(crate) fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>, u8) {
             let decrypted: Vec<u8> = xor(input.clone(), c);
             let frequency = calculate_frequency(decrypted.clone());
             // Smaller the distance, the better
-            let distance = calculate_difference(frequency.clone(), LETTERS_FREQUENCY.clone());
+            let distance = calculate_difference(frequency.clone(), letters_frequency.clone());
             (distance, decrypted, c)
         })
         .fold((f64::MAX, Vec::new(), 0), |curr, new| {
@@ -84,4 +84,12 @@ pub(crate) fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>, u8) {
                 curr
             }
         })
+}
+
+/// Returns the hamming distance between a and b
+pub(crate) fn hamming_distance(a: Vec<u8>, b: Vec<u8>) -> u32 {
+    a.into_iter()
+        .zip(b.into_iter())
+        .map(|(first, second)| (first ^ second).count_ones())
+        .sum()
 }

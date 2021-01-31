@@ -1,4 +1,5 @@
 use crate::ex_5_repeating_key_xor::repeating_xor_key;
+use crate::shared;
 use std::path::PathBuf;
 
 fn transpose_blocks(keysize: usize, cyphertext: &[u8]) -> Vec<Vec<u8>> {
@@ -13,13 +14,6 @@ fn transpose_blocks(keysize: usize, cyphertext: &[u8]) -> Vec<Vec<u8>> {
         .collect()
 }
 
-fn hamming_distance(a: Vec<u8>, b: Vec<u8>) -> u32 {
-    a.into_iter()
-        .zip(b.into_iter())
-        .map(|(first, second)| (first ^ second).count_ones())
-        .sum()
-}
-
 fn mean(list: &[i32]) -> f64 {
     let sum: i32 = Iterator::sum(list.iter());
     f64::from(sum) / (list.len() as f64)
@@ -28,7 +22,7 @@ fn mean(list: &[i32]) -> f64 {
 /// Divides in blocks keysize long, finds the hamming distance, and sort the result with
 /// lower HD first.
 fn find_key_size(crypted: &[u8]) -> Vec<(usize, f32)> {
-    let mut toRet = vec![];
+    let mut to_ret = vec![];
     for keysize in 2..=40 {
         let chunks: Vec<&[u8]> = crypted.chunks(keysize).collect();
         let blocks_amount = 4;
@@ -40,14 +34,14 @@ fn find_key_size(crypted: &[u8]) -> Vec<(usize, f32)> {
         // all combinations of distances
         for x in 0..blocks_amount {
             for y in 0..blocks_amount {
-                distance += hamming_distance(blocks[x].into(), blocks[y].into()) as f32;
+                distance += shared::hamming_distance(blocks[x].into(), blocks[y].into()) as f32;
             }
         }
         let ed = distance / keysize as f32;
-        toRet.push((keysize, ed));
+        to_ret.push((keysize, ed));
     }
-    toRet.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-    toRet
+    to_ret.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    to_ret
 }
 
 fn find_original_key(transposed: Vec<Vec<u8>>) -> Vec<u8> {
@@ -57,7 +51,7 @@ fn find_original_key(transposed: Vec<Vec<u8>>) -> Vec<u8> {
         .collect()
 }
 
-fn break_repeating_key_xor(file: PathBuf) -> (Vec<u8>, Vec<u8>) {
+fn break_repeating_key_xor(_file: PathBuf) -> (Vec<u8>, Vec<u8>) {
     let cipherlines: Vec<&str> = include_str!("../res/ex_6.txt").lines().collect();
     let ciphertext: String = cipherlines.join("");
     let crypted = base64::decode(ciphertext).unwrap();
@@ -85,7 +79,8 @@ fn break_repeating_key_xor(file: PathBuf) -> (Vec<u8>, Vec<u8>) {
 
 #[cfg(test)]
 mod test {
-    use crate::ex_6_break_repeating_key_xor::{break_repeating_key_xor, hamming_distance};
+    use crate::ex_6_break_repeating_key_xor::break_repeating_key_xor;
+    use crate::shared::hamming_distance;
     use std::path::PathBuf;
 
     #[test]
@@ -99,7 +94,6 @@ mod test {
     }
     #[test]
     fn test_decipher() {
-        let expected = b"Now that the party is jumping\n";
         let mut file = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         file.push("res/ex_4.txt");
         let received = break_repeating_key_xor(file);

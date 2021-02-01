@@ -15,4 +15,5 @@ mod ex_4_detect_single_character_xor;
 mod ex_5_repeating_key_xor;
 mod ex_6_break_repeating_key_xor;
 mod ex_7_aes_in_ecb_mode;
+mod ex_8_aes_in_ecb_mode;
 mod shared;

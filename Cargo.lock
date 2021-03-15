@@ -116,7 +116,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7e0456befd48169b9f13ef0f0ad46d492cf9d2dbb918bcf38e01eed4ce3ec5e4"
 
 [[package]]
-name = "set-1"
+name = "set_1"
 version = "0.1.0"
 dependencies = [
  "aes",
@@ -125,6 +125,19 @@ dependencies = [
  "hex",
  "hex-literal",
  "maplit",
+]
+
+[[package]]
+name = "set_2"
+version = "0.1.0"
+dependencies = [
+ "aes",
+ "base64",
+ "block-modes",
+ "hex",
+ "hex-literal",
+ "maplit",
+ "set_1",
 ]
 
 [[package]]

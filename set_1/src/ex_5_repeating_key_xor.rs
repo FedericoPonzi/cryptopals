@@ -1,7 +1,10 @@
 use std::ops::BitXor;
 
 // Returns the input repeatedly XORed with key.
-pub fn repeating_xor_key(input: &[u8], key: Vec<u8>) -> Vec<u8> {
+pub fn repeating_xor_key<T: Clone + IntoIterator<Item = u8>>(input: &[u8], key: T) -> Vec<u8>
+where
+    <T as IntoIterator>::IntoIter: Clone,
+{
     input
         .into_iter()
         .zip(key.into_iter().cycle())

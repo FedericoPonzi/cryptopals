@@ -31,7 +31,7 @@ fn count_repeated_blocks(buf: &[u8]) -> i64 {
 #[cfg(test)]
 mod test {
 
-    use crate::ex_8_aes_in_ecb_mode::find_aes_block;
+    use crate::ex_8_find_aes_ecb_cyphertext::find_aes_block;
     use std::path::PathBuf;
 
     #[test]

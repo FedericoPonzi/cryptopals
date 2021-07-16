@@ -1,2 +1,6 @@
 [workspace]
-members = ["set_1", "set_2"]
+members = [
+    "crypto",
+    "set_1",
+    "set_2"
+]

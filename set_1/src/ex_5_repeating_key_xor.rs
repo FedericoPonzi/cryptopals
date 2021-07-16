@@ -24,7 +24,7 @@ mod test {
         let input = br#"Burning 'em, if you ain't quick and nimble
 I go crazy when I hear a cymbal"#;
         let key = "ICE".bytes();
-        let received = repeating_xor_key(input, key.collect());
+        let received = repeating_xor_key(input, key);
         assert_eq!(hex::encode(received), expected);
     }
 }

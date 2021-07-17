@@ -11,14 +11,10 @@ const RC_VALUES: &[u8; 11] = &[
 pub fn key_expansion(key: &[u8; 16]) -> [[u8; 16]; 11] {
     let mut ret = [[0u8; 16]; 11];
 
-    //let mut ret = [0u8; 176];
     // number of round keys needed:
     // 11 round keys for AES-128, 13 keys for AES-192, and 15 keys for AES-256
     const ROUNDS: usize = 10;
 
-    // the length of the key in 32-bit words:
-    // 4 words for AES-128, 6 words for AES-192, and 8 words for AES-256
-    const N: usize = 4;
     ret[0] = key.clone();
 
     for i in 1..=ROUNDS {
@@ -53,10 +49,6 @@ fn xor(sboxed: &[u8; 4], rcon: &[u8; 4]) -> [u8; 4] {
         ret[i] = sboxed[i] ^ rcon[i];
     }
     ret
-}
-
-fn printhex(inp: &[u8]) -> String {
-    inp.into_iter().map(|b| format!("{:#01x}, ", b)).collect()
 }
 
 // Rotate left

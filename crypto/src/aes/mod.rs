@@ -37,10 +37,6 @@ pub fn decrypt(block: &[u8; 16], key: &[u8; 16]) -> [u8; 16] {
     state
 }
 
-fn printhex(inp: &[u8]) -> String {
-    inp.into_iter().map(|b| format!("{:#01x}, ", b)).collect()
-}
-
 pub fn encrypt(block: &[u8; 16], key: &[u8; 16]) -> [u8; 16] {
     let expaneded_key = key_expansion(key);
     let mut state = add_round_key(&block, &expaneded_key[0]);

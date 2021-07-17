@@ -1,8 +1,3 @@
-use aes::Aes128;
-use block_modes::block_padding::Pkcs7;
-use block_modes::{BlockMode, Cbc, Ecb};
-use set_1::ex_5_repeating_key_xor::repeating_xor_key;
-
 fn decrypt_cbc_mode(cipherlines: &[u8], key: &[u8; 16]) -> Vec<u8> {
     crypto::aes::cbc_with_iv(&[0u8; 16], key, cipherlines)
 }
@@ -97,7 +92,7 @@ Play that funky music
             .collect::<Vec<&str>>()
             .join("");
         let key: &[u8; 16] = b"YELLOW SUBMARINE";
-        let mut cipherlines = base64::decode(&b64_cipherlines).unwrap();
+        let cipherlines = base64::decode(&b64_cipherlines).unwrap();
         let res = decrypt_cbc_mode(cipherlines.as_slice(), key);
         assert_eq!(EXPECTED, String::from_utf8_lossy(res.as_slice()));
     }

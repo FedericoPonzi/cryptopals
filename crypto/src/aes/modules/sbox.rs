@@ -58,7 +58,7 @@ pub fn sub_bytes(state: &[u8; 16]) -> [u8; 16] {
 
 #[cfg(test)]
 mod test {
-    use crate::sbox::{sub_bytes, sub_bytes_inverse};
+    use super::{sub_bytes, sub_bytes_inverse};
 
     #[test]
     fn test_sub_bytes() {

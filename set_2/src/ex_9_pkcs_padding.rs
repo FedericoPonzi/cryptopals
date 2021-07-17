@@ -1,3 +1,4 @@
+// TODO: move into crypto.
 pub struct Pkcs7;
 impl Pkcs7 {
     /// A very simple padding implementation used by Pkcs7

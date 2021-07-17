@@ -1,12 +1,6 @@
-use aes::cipher::generic_array::GenericArray;
-use aes::{Aes128, BlockCipher, NewBlockCipher};
-use block_modes::block_padding::Pkcs7;
-use block_modes::cipher::BlockCipherMut;
-use block_modes::{BlockMode, Ecb};
 use std::collections::HashSet;
 use std::path::PathBuf;
 
-type Aes128Ecb = Ecb<Aes128, Pkcs7>;
 fn find_aes_block(b64input: String) -> (i64, String) {
     b64input
         .lines()

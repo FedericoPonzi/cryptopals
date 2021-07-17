@@ -47,8 +47,7 @@ pub fn shift_rows_inverse(state: &[u8; 16]) -> [u8; 16] {
 
 #[cfg(test)]
 mod test {
-    use crate::printhex;
-    use crate::shift_rows::{shift_rows, shift_rows_inverse};
+    use super::{shift_rows, shift_rows_inverse};
 
     #[test]
     fn test_shift_rows() {
@@ -63,7 +62,6 @@ mod test {
         ];
 
         assert_eq!(expected, shift_rows(&state));
-
         assert_eq!(shift_rows_inverse(&shift_rows(&state)), state);
     }
 }

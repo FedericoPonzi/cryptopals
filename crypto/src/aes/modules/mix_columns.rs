@@ -51,7 +51,7 @@ pub fn mix_columns_inverse(state: &[u8; 16]) -> [u8; 16] {
 
 #[cfg(test)]
 mod test {
-    use crate::mix_columns::{mix_columns, mix_columns_inverse, multiply_by_two};
+    use super::{mix_columns, mix_columns_inverse, multiply_by_two};
     #[test]
     fn test_multiply_by_two() {
         assert_eq!(multiply_by_two(0), 0);

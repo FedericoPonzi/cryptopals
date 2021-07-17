@@ -26,14 +26,8 @@ fn decrypt_aes_in_ecb_mode_v2(key: &[u8; 16]) -> Vec<u8> {
         .lines()
         .collect::<Vec<&str>>()
         .join("");
-    let cipherlines = base64::decode(&b64_cipherlines).unwrap();
-    let mut ret = vec![];
-    for block in cipherlines.chunks(16) {
-        let mut buf = [0u8; 16];
-        buf.copy_from_slice(&block);
-        ret.append(&mut crypto::decrypt(&buf, key).to_vec());
-    }
-    ret
+    let ciphertext = base64::decode(&b64_cipherlines).unwrap();
+    crypto::aes::ecb(key, ciphertext.as_slice())
 }
 
 #[cfg(test)]

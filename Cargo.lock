@@ -141,6 +141,7 @@ dependencies = [
  "aes",
  "base64",
  "block-modes",
+ "crypto",
  "hex",
  "hex-literal",
  "maplit",

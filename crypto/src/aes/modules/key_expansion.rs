@@ -1,4 +1,4 @@
-use crate::sbox;
+use crate::aes::modules::sbox;
 
 const RC_VALUES: &[u8; 11] = &[
     0x00, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36,
@@ -75,7 +75,7 @@ fn sub_word(w: &[u8]) -> [u8; 4] {
 
 #[cfg(test)]
 mod test {
-    use crate::key_expansion::key_expansion;
+    use super::key_expansion;
 
     #[test]
     fn test_key_expansion() {

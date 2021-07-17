@@ -13,8 +13,7 @@ pub fn add_round_key(state: &[u8; 16], round_key: &[u8; 16]) -> [u8; 16] {
 
 #[cfg(test)]
 mod test {
-    use crate::add_round_key::add_round_key;
-
+    use super::add_round_key;
     #[test]
     fn test_add_round_keys() {
         let state = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];

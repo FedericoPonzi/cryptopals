@@ -36,9 +36,6 @@ mod test {
             .collect::<Vec<&str>>()
             .join("\n");
 
-        assert_eq!(
-            find_aes_block(b64_cipherlines),
-            (3i64, expected.to_string())
-        );
+        assert_eq!(find_aes_block(b64_cipherlines), (3, expected.to_string()));
     }
 }

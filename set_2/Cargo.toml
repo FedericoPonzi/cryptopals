@@ -13,5 +13,6 @@ maplit = "1.0.2"
 hex = "0.4.2"
 aes = "0.6.0"
 block-modes = "0.7.0"
+rand = "~0.8"
 set_1 = { path = "../set_1" }
 crypto = {path = "../crypto"}

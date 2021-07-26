@@ -11,14 +11,11 @@
 use modules::{add_round_key, key_expansion, sub_bytes, sub_bytes_inverse};
 use modules::{mix_columns, mix_columns_inverse};
 use modules::{shift_rows, shift_rows_inverse};
+use std::collections::HashSet;
 
-mod cbc;
-mod ecb;
+pub mod cbc;
+pub mod ecb;
 mod modules;
-
-pub use cbc::cbc;
-pub use cbc::cbc_with_iv;
-pub use ecb::ecb;
 
 const ROUNDS_128: usize = 9;
 
@@ -50,6 +47,15 @@ pub fn encrypt(block: &[u8; 16], key: &[u8; 16]) -> [u8; 16] {
     state = shift_rows(&state);
     state = add_round_key(&state, &expaneded_key[10]);
     state
+}
+
+/// Checks if there are any repeating blocks to assess if this ciphertext is encrypted with ecb.
+pub fn is_ecb_encrypted(buf: &[u8]) -> bool {
+    let unique_blocks = buf.chunks(16).into_iter().collect::<HashSet<&[u8]>>().len();
+    let total_blocks = (buf.len() / 16);
+    let duplicated_blocks = total_blocks as i64 - unique_blocks as i64;
+    println!("Duplicated blocks: {}", duplicated_blocks);
+    duplicated_blocks > 0
 }
 
 #[cfg(test)]

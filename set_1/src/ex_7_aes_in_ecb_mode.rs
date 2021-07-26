@@ -27,7 +27,7 @@ fn decrypt_aes_in_ecb_mode_v2(key: &[u8; 16]) -> Vec<u8> {
         .collect::<Vec<&str>>()
         .join("");
     let ciphertext = base64::decode(&b64_cipherlines).unwrap();
-    crypto::aes::ecb(key, ciphertext.as_slice())
+    crypto::aes::ecb::decrypt(key, ciphertext.as_slice())
 }
 
 #[cfg(test)]

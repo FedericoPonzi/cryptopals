@@ -61,7 +61,7 @@ pub fn encrypt_with_random_key(plaintext: &[u8]) -> (Vec<u8>, EncryptionMode) {
         .collect();
     if rand::random::<bool>() {
         println!("Encrypting using CBC...");
-        let padded = Pkcs7::pad(plaintext, 16);
+        let padded = Pkcs7::pad(&plaintext_w_gibberish, 16);
         let iv = random_key();
         (
             crypto::aes::cbc::encrypt_with_iv(&iv, &key, padded.as_slice()),
@@ -69,7 +69,7 @@ pub fn encrypt_with_random_key(plaintext: &[u8]) -> (Vec<u8>, EncryptionMode) {
         )
     } else {
         println!("Encrypting using ECB...");
-        let padded = Pkcs7::pad(plaintext, 16);
+        let padded = Pkcs7::pad(&plaintext_w_gibberish, 16);
         (
             crypto::aes::ecb::encrypt(&key, padded.as_slice()),
             EncryptionMode::ECB,

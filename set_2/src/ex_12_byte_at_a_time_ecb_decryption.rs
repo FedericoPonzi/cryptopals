@@ -126,13 +126,6 @@ fn solve(key: &[u8; 16]) -> String {
 }
 
 /**
-Received: "AAAAAAAARollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on standby waving just to say hi\nRollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on standby waving just to say hi\nDid you stop? No, I just drove by\n\u{6}\u{6}\u{6}\u{6}\u{6}\u{6}"
-Target: "AAAAAAAARollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on standby waving just to say hi\nDid you stop? No, I just drove by\n\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}"
-
-Received: "AAAAAAAARollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on standby waving just to say hi\nRollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on standby waving just to say hi\nDid you stop? No, I just drove by\n\u{6}\u{6}\u{6}\u{6}\u{6}\u{6}"
-Target: "AAAAAAAARollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on standby waving just to say hi\nDid you stop? No, I just drove by\n\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}\u{e}"
-current: "Rollin' in my 5.0\nWith my rag-top down so my hair can blow\nThe girlies on standby waving just to say hi\nD"
-
 Takes a random key as input and returns `AES-128-ECB(your-string || unknown-string, random-key)`
 **/
 fn oracle(plaintext: Vec<u8>, key: &[u8; 16]) -> Vec<u8> {

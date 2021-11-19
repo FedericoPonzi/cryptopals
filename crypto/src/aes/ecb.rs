@@ -1,3 +1,5 @@
+use crate::aes::random_key;
+
 // TODO: Remove padding.
 pub fn decrypt(key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {
     use crate::aes::decrypt as aes_decrypt;
@@ -21,6 +23,31 @@ pub fn encrypt(key: &[u8; 16], plaintext: &[u8]) -> Vec<u8> {
     }
     ret
 }
+
+pub fn find_block_size<O>(oracle: O) -> Option<usize>
+where
+    O: Fn(Vec<u8>, &[u8; 16]) -> Vec<u8>,
+{
+    let key = random_key();
+    let mut last_vec: Vec<u8> = vec![];
+    for i in 1..=128 {
+        let plaintext = std::iter::repeat(b'A').take(i).collect();
+
+        let ciphertext = oracle(plaintext, &key);
+        let block_size = ciphertext
+            .clone()
+            .into_iter()
+            .zip(last_vec)
+            .take_while(|(cur, prev)| *cur == *prev)
+            .count();
+        if block_size > 8 {
+            return Some(block_size);
+        }
+        last_vec = ciphertext;
+    }
+    None
+}
+
 #[cfg(test)]
 mod test {
     use crate::aes::ecb::decrypt;

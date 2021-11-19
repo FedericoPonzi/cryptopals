@@ -1,3 +1,4 @@
+use crypto::aes::ecb::find_block_size;
 use crypto::Pkcs7;
 
 /**
@@ -48,24 +49,7 @@ fn longest_substring(first: &[u8], second: &[u8]) -> usize {
         .take_while(|(cur, prev)| *cur == *prev)
         .count()
 }
-fn find_block_size(key: &[u8; 16]) -> Option<usize> {
-    let mut last_vec: Vec<u8> = vec![];
-    for i in 1..=128 {
-        let plaintext = std::iter::repeat(b'A').take(i).collect();
-        let ciphertext = oracle(plaintext, key);
-        let block_size = ciphertext
-            .clone()
-            .into_iter()
-            .zip(last_vec)
-            .take_while(|(cur, prev)| *cur == *prev)
-            .count();
-        if block_size > 8 {
-            return Some(block_size);
-        }
-        last_vec = ciphertext;
-    }
-    None
-}
+
 fn decrypt_ecb(block_size: usize, key: &[u8; 16]) -> Vec<u8> {
     let windows: Vec<Vec<u8>> = (0..block_size)
         .into_iter()
@@ -120,7 +104,7 @@ fn solve(key: &[u8; 16]) -> String {
         return "".to_string();
     }
     println!("It is ECB :)");
-    let block_len = find_block_size(key).unwrap();
+    let block_len = find_block_size(oracle).expect("Block size not found!?");
     println!("Block len: {}", block_len);
     String::from_utf8_lossy(&decrypt_ecb(block_len, key)).to_string()
 }
@@ -131,14 +115,13 @@ Takes a random key as input and returns `AES-128-ECB(your-string || unknown-stri
 fn oracle(plaintext: Vec<u8>, key: &[u8; 16]) -> Vec<u8> {
     let decoded = base64::decode(APPENDED_B64).unwrap();
     let plaintext: Vec<u8> = plaintext.into_iter().chain(decoded.into_iter()).collect();
-    //println!("Encrypting using ECB...");
     let padded = Pkcs7::pad(&plaintext, 16);
     crypto::aes::ecb::encrypt(&key, padded.as_slice())
 }
 
 #[cfg(test)]
 mod test {
-    use crate::ex_12_byte_at_a_time_ecb_decryption::{oracle, solve, APPENDED_B64};
+    use crate::ex_12_byte_at_a_time_ecb_decryption::{solve, APPENDED_B64};
     use crypto::aes::random_key;
 
     #[test]

@@ -25,9 +25,8 @@ pub fn decrypt(key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {
     decrypt_with_iv(&iv, key, ciphertext)
 }
 
-pub fn encrypt(key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {
-    todo!();
-    vec![]
+pub fn encrypt(_key: &[u8; 16], _ciphertext: &[u8]) -> Vec<u8> {
+    todo!()
 }
 
 pub fn encrypt_with_iv(iv: &[u8; 16], key: &[u8; 16], plaintext: &[u8]) -> Vec<u8> {

@@ -27,11 +27,10 @@ Detect the block cipher mode the function is using each time.
 You should end up with a piece of code that, pointed at a block box
 that might be encrypting ECB or CBC, tells you which one is happening.
 */
-use rand::{random, Rng};
-use std::collections::HashSet;
+use rand::Rng;
 use std::ops::Range;
 
-pub fn random_key() -> [u8; 16] {
+fn random_key() -> [u8; 16] {
     let mut rng = rand::thread_rng();
     rng.gen()
 }

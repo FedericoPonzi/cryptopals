@@ -33,6 +33,20 @@
 //!
 //! Before you implement this attack, answer this question: why does CBC mode have this property?
 
+fn create_encrypted_user(comment: String, key: Vec<u8>) -> Vec<u8> {
+    let prefix = "comment1=cooking%20MCs;";
+    let suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
+    let plaintext = format!("{}{}{}", prefix, comment, suffix);
+    plaintext.into_bytes()
+}
+fn is_user_admin(ciphertext: Vec<u8>, key: Vec<u8>) -> bool {
+    let decripted = "".to_string();
+    decripted
+        .split(";")
+        .into_iter()
+        .any(|el| el == "admin=true")
+}
+
 fn solve() {}
 
 #[cfg(test)]

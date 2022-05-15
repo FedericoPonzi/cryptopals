@@ -51,7 +51,7 @@ Using only the user input to profile_for() (as an oracle to generate "valid" cip
 
  */
 
-use crypto::aes::ecb::find_block_size;
+use crypto::aes::ecb::cryptanalysis::find_block_size;
 use crypto::Pkcs7;
 
 const TARGET_ROLE: &str = "admin";

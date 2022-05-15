@@ -92,10 +92,13 @@ fn solve(oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> String {
         panic!("Not AES?!");
     }
     println!("It is ECB :)");
-    let block_len =
-        crypto::aes::ecb::find_block_size(oracle.clone()).expect("Block size not found!?");
+    let block_len = crypto::aes::ecb::cryptanalysis::find_block_size(oracle.clone())
+        .expect("Block size not found!?");
     println!("Block len: {}", block_len);
-    String::from_utf8_lossy(&decrypt_ecb(block_len, oracle)).to_string()
+    String::from_utf8_lossy(
+        &crypto::aes::ecb::cryptanalysis::crack_ecb_one_byte_at_time(block_len, oracle),
+    )
+    .to_string()
 }
 
 /**

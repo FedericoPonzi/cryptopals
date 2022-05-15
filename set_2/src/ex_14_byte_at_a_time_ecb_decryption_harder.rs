@@ -15,71 +15,10 @@ What's harder than challenge #12 about doing this? How would you overcome that o
 Think "STIMULUS" and "RESPONSE".
  */
 
-use crypto::aes::ecb::{find_block_size, find_block_size_random_prefix};
+use crypto::aes::ecb::cryptanalysis::find_block_size_random_prefix;
 use crypto::utils::longest_substring;
-use rand::random;
-use std::io::Write;
 
 const APPENDED_B64: &str = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK";
-
-/// random_prefix_padding is the padding till the end of the block for the random prefix string.
-fn decrypt_ecb(
-    block_size: usize,
-    oracle: impl Fn(Vec<u8>) -> Vec<u8>,
-    random_prefix_len: usize,
-) -> Vec<u8> {
-    let random_prefix_padding = if random_prefix_len % block_size > 0 {
-        let last_block_len = random_prefix_len % block_size;
-        block_size - last_block_len
-    } else {
-        0
-    };
-    let random_prefix_total_size = random_prefix_padding + random_prefix_len;
-
-    let take = |i| {
-        std::iter::repeat(b'A')
-            .take(random_prefix_padding + i)
-            .collect()
-    };
-    let windows: Vec<Vec<u8>> = (0..block_size).into_iter().map(take).rev().collect();
-    println!("Random prefix padding: {}", random_prefix_padding);
-    let mut current_plaintext = vec![];
-    for w in windows.into_iter().cycle() {
-        let target_ciphertext = &oracle(w.clone())[random_prefix_total_size..];
-
-        let mut extended_w = w.clone();
-        extended_w.extend_from_slice(&current_plaintext);
-        for i in 0..=u8::MAX {
-            let mut temp_w = extended_w.clone();
-            temp_w.push(i);
-            let w_len = temp_w.len() - (random_prefix_padding);
-            let received = &oracle(temp_w)[random_prefix_total_size..];
-            let longest = longest_substring(target_ciphertext, received);
-            if longest >= w_len {
-                //print!("{}", String::from_utf8_lossy(&[i]));
-                //std::io::stdout().flush().unwrap();
-                current_plaintext.push(i);
-                break;
-            }
-            if i == u8::MAX - 1 {
-                panic!(
-                    "NOT FOUND: w_len:{}, longest: {}, w: {:?}, \ncurrent_pt: {:?}, \nreceievd ={:?}, \ntarget: {:?}",
-                    w_len,
-                    longest,
-                    extended_w,
-                    String::from_utf8_lossy(&current_plaintext),
-                    received,
-                    target_ciphertext
-                );
-            }
-        }
-        //TODO.
-        if current_plaintext.len() == 138 {
-            break;
-        }
-    }
-    return current_plaintext;
-}
 
 #[derive(Debug, Clone)]
 pub struct RandomPrefix {
@@ -142,11 +81,13 @@ fn solve(oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> String {
     let block_len =
         find_block_size_random_prefix(oracle.clone(), rounded_prefix_block_size).unwrap();
     assert_eq!(block_len, 16);
-    String::from_utf8_lossy(&decrypt_ecb(
-        block_len,
-        oracle,
-        random_prefix.total_prefix_len,
-    ))
+    String::from_utf8_lossy(
+        &crypto::aes::ecb::cryptanalysis::crack_ecb_one_byte_at_time_random_prefix(
+            block_len,
+            oracle,
+            random_prefix.total_prefix_len,
+        ),
+    )
     .to_string()
 }
 
@@ -174,7 +115,7 @@ fn build_oracle(key: Vec<u8>, prefix: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + 
 #[cfg(test)]
 mod test {
     use crate::ex_14_byte_at_a_time_ecb_decryption_harder::{
-        build_oracle, find_block_size, find_random_prefix_size, solve, APPENDED_B64,
+        build_oracle, find_random_prefix_size, solve, APPENDED_B64,
     };
     use crypto::aes::random_key;
 
@@ -200,7 +141,11 @@ mod test {
             let oracle = build_oracle(random_key().to_vec(), random_bytes_n(n));
             let padd = 16 - n as usize % 16;
             assert_eq!(
-                crypto::aes::ecb::find_block_size_random_prefix(oracle, n as usize + padd).unwrap(),
+                crypto::aes::ecb::cryptanalysis::find_block_size_random_prefix(
+                    oracle,
+                    n as usize + padd
+                )
+                .unwrap(),
                 16
             );
         }

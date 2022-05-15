@@ -1,5 +1,4 @@
-use crate::aes::random_key;
-use crate::utils::longest_substring;
+pub mod cryptanalysis;
 
 // TODO: Remove padding.
 pub fn decrypt(key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {
@@ -30,42 +29,9 @@ pub fn encrypt(key: &[u8; 16], plaintext: &[u8]) -> Vec<u8> {
     ret
 }
 
-pub fn find_block_size(oracle: impl Fn(Vec<u8>) -> Vec<u8>) -> Option<usize> {
-    find_block_size_random_prefix(oracle, 0)
-}
-
-/// random_prefix_rounded_to_block_len: random prefix size + padding to complete the block.
-pub fn find_block_size_random_prefix(
-    oracle: impl Fn(Vec<u8>) -> Vec<u8>,
-    random_prefix_rounded_to_block_len: usize,
-) -> Option<usize> {
-    let mut last_vec: Vec<u8> = vec![];
-    for i in 1..=128 {
-        let plaintext = std::iter::repeat(b'A').take(i).collect();
-
-        let ciphertext = oracle(plaintext);
-        let block_size = longest_substring(&ciphertext, &last_vec);
-        if block_size > random_prefix_rounded_to_block_len
-            && block_size - random_prefix_rounded_to_block_len > 8
-        {
-            let ret = block_size - random_prefix_rounded_to_block_len;
-            assert_eq!(
-                ret, 16,
-                "Something went wrong when finding the block size. Block size: {}, Random prefix: {}",
-                block_size,random_prefix_rounded_to_block_len
-
-            );
-            return Some(ret);
-        }
-        last_vec = ciphertext;
-    }
-    None
-}
-
 #[cfg(test)]
 mod test {
-    use crate::aes::ecb::{encrypt, find_block_size_random_prefix};
-    use crate::aes::random_key;
+    use crate::aes::ecb::encrypt;
     use crate::Pkcs7;
 
     fn test_encrypt(plaintext: &[u8], expected_b64: &str, key: &[u8; 16]) {

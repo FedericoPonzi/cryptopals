@@ -115,9 +115,8 @@ fn profile_for(email: &str) -> Profile {
     )
 }
 
-fn solve(key: &[u8; 16]) -> Vec<u8> {
-    let block_len =
-        find_block_size(|p, k| profile_for(&String::from_utf8_lossy(&p)).encrypt(*k)).unwrap();
+fn solve(key: &[u8; 16], oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> Vec<u8> {
+    let block_len = find_block_size(oracle.clone()).unwrap();
 
     let gen_padding = |x| (0..x).map(|_| 'a').collect::<String>();
 
@@ -130,7 +129,7 @@ fn solve(key: &[u8; 16]) -> Vec<u8> {
     // Format: [email=____, admin____, &uid=10&role=user]
     // admin gets its own block.
     let mut admin_encrypted_block =
-        Vec::from(&profile_for(&padding_admin_padding).encrypt(*key).as_slice()[16..32]);
+        Vec::from(&oracle(padding_admin_padding.as_bytes().to_vec()).as_slice()[16..32]);
     // admin_encrypted_block contains "admin____"
     // Last step is use an email long enough to push `user` of `role=user` in its own block:
     // email=foo@bar.it&uid=10role=]user
@@ -155,10 +154,19 @@ fn solve(key: &[u8; 16]) -> Vec<u8> {
     return ret;
 }
 
+fn build_oracle(key: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + Clone {
+    return move |plaintext: Vec<u8>| -> Vec<u8> {
+        const KEY_SIZE: usize = 16;
+        let mut k = [0; KEY_SIZE];
+        k.copy_from_slice(&key.as_slice()[..KEY_SIZE]);
+        profile_for(&String::from_utf8_lossy(&plaintext)).encrypt(k)
+    };
+}
+
 #[cfg(test)]
 mod test {
     use super::Profile;
-    use crate::ex_13_ecb_cut_and_paste::{solve, TARGET_ROLE};
+    use crate::ex_13_ecb_cut_and_paste::{build_oracle, solve, TARGET_ROLE};
     use crypto::aes::random_key;
 
     #[test]
@@ -169,7 +177,8 @@ mod test {
     #[test]
     fn test_solve() {
         let key = random_key();
-        let forged = solve(&key);
+        let oracle = build_oracle(key.to_vec());
+        let forged = solve(&key, oracle);
         assert_eq!(Profile::decrypt(key, &forged).role, TARGET_ROLE);
     }
 }

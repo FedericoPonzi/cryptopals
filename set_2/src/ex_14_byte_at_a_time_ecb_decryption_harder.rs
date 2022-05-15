@@ -15,17 +15,12 @@ What's harder than challenge #12 about doing this? How would you overcome that o
 Think "STIMULUS" and "RESPONSE".
  */
 
+use crypto::aes::ecb::{find_block_size, find_block_size_random_prefix};
+use crypto::utils::longest_substring;
 use rand::random;
 use std::io::Write;
 
 const APPENDED_B64: &str = "Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK";
-fn longest_substring(first: &[u8], second: &[u8]) -> usize {
-    first
-        .iter()
-        .zip(second)
-        .take_while(|(cur, prev)| *cur == *prev)
-        .count()
-}
 
 /// random_prefix_padding is the padding till the end of the block for the random prefix string.
 fn decrypt_ecb(
@@ -61,8 +56,8 @@ fn decrypt_ecb(
             let received = &oracle(temp_w)[random_prefix_total_size..];
             let longest = longest_substring(target_ciphertext, received);
             if longest >= w_len {
-                print!("{}", String::from_utf8_lossy(&[i]));
-                std::io::stdout().flush().unwrap();
+                //print!("{}", String::from_utf8_lossy(&[i]));
+                //std::io::stdout().flush().unwrap();
                 current_plaintext.push(i);
                 break;
             }
@@ -86,10 +81,19 @@ fn decrypt_ecb(
     return current_plaintext;
 }
 
+#[derive(Debug, Clone)]
+pub struct RandomPrefix {
+    /// Total random prefix len
+    total_prefix_len: usize,
+    /// Amount of bytes necessary to finish the block.
+    padding_len: usize,
+}
+
 /// Returns.
 /// Random prefix size.
 /// amount of bytes to finish the block
-pub fn find_random_prefix_size(oracle: impl Fn(Vec<u8>) -> Vec<u8>) -> (usize, usize) {
+///
+pub fn find_random_prefix_size(oracle: impl Fn(Vec<u8>) -> Vec<u8>) -> RandomPrefix {
     // 1. we find the size of the random prefix + padding to fill up the whole block.
     let mut last_vec: Vec<u8> = oracle(vec![]);
     let mut random_prefix_size = 0;
@@ -112,33 +116,16 @@ pub fn find_random_prefix_size(oracle: impl Fn(Vec<u8>) -> Vec<u8>) -> (usize, u
             let new_block_size = longest_substring(&ciphertext, &ciphertext_replaced);
             if new_block_size == temp_block_size {
                 //println!("temp_block size: {}, i:{}, i", temp_block_size, i);
-                return (temp_block_size + 1 - i, i - 1);
+                return RandomPrefix {
+                    total_prefix_len: temp_block_size + 1 - i,
+                    padding_len: i - 1,
+                };
             }
             random_prefix_size = temp_block_size;
         }
         last_vec = ciphertext;
     }
     panic!("Random prefix len not found :(");
-}
-
-/// random_prefix_rounded_to_block_len: random prefix size + padding to complete the block.
-pub fn find_block_size(
-    oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone,
-    random_prefix_rounded_to_block_len: usize,
-) -> usize {
-    let mut last_vec: Vec<u8> = vec![];
-
-    for i in 1..=128 {
-        let plaintext = std::iter::repeat(b'A').take(i).collect();
-
-        let ciphertext = oracle(plaintext);
-        let block_size = longest_substring(&ciphertext, &last_vec);
-        if block_size > random_prefix_rounded_to_block_len {
-            return block_size - random_prefix_rounded_to_block_len;
-        }
-        last_vec = ciphertext;
-    }
-    panic!("Block size not found :(");
 }
 
 fn solve(oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> String {
@@ -149,18 +136,18 @@ fn solve(oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> String {
         return "".to_string();
     }
     println!("It is ECB :)");
-    let (random_prefix_size, start) = find_random_prefix_size(oracle.clone());
-    let rounded_prefix_block_size = random_prefix_size + start;
+    let random_prefix = find_random_prefix_size(oracle.clone());
+    let rounded_prefix_block_size = random_prefix.total_prefix_len + random_prefix.padding_len;
 
-    let block_len = find_block_size(oracle.clone(), rounded_prefix_block_size);
+    let block_len =
+        find_block_size_random_prefix(oracle.clone(), rounded_prefix_block_size).unwrap();
     assert_eq!(block_len, 16);
-    println!(
-        "Block Size: {}, random_prefix_len: {}, prefix pad: {}",
+    String::from_utf8_lossy(&decrypt_ecb(
         block_len,
-        random_prefix_size,
-        random_prefix_size % block_len
-    );
-    String::from_utf8_lossy(&decrypt_ecb(block_len, oracle, random_prefix_size)).to_string()
+        oracle,
+        random_prefix.total_prefix_len,
+    ))
+    .to_string()
 }
 
 fn build_oracle(key: Vec<u8>, prefix: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + Clone {
@@ -207,23 +194,29 @@ mod test {
     }
 
     #[test]
+    fn test_find_block_size() {
+        for _ in 0..10 {
+            let n: u32 = rand::random::<u32>() % 1000;
+            let oracle = build_oracle(random_key().to_vec(), random_bytes_n(n));
+            let padd = 16 - n as usize % 16;
+            assert_eq!(
+                crypto::aes::ecb::find_block_size_random_prefix(oracle, n as usize + padd).unwrap(),
+                16
+            );
+        }
+    }
+
+    #[test]
     fn test_random_prefix_size() {
         for _ in 0..10 {
             let n: u32 = rand::random::<u32>() % 1000;
             let key: &[u8; 16] = &random_key();
             let random_prefix = random_bytes_n(n);
             let oracle = build_oracle(key.to_vec(), random_prefix);
-            assert_eq!(n as usize, find_random_prefix_size(oracle).0);
+            assert_eq!(n as usize, find_random_prefix_size(oracle).total_prefix_len);
         }
     }
 
-    #[test]
-    fn test_find_block_size() {
-        let key: &[u8; 16] = &random_key();
-        let random_prefix = random_bytes();
-        let oracle = build_oracle(key.to_vec(), random_prefix);
-        assert_eq!(find_block_size(oracle, 0), 16);
-    }
     fn test_single(n: usize) {
         let key: &[u8; 16] = &random_key();
         let random_prefix = random_bytes_n(1);
@@ -233,9 +226,9 @@ mod test {
     }
     #[test]
     fn test_byte_a_time() {
-        //test_single(0);
-        //test_single(1);
-        //test_single(16);
+        test_single(0);
+        test_single(1);
+        test_single(16);
         let n: u32 = rand::random::<u32>() % 1000;
         test_single(n as usize);
     }

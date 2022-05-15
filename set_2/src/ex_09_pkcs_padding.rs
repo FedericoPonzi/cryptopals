@@ -2,7 +2,7 @@ use crypto::Pkcs7;
 
 #[cfg(test)]
 mod test {
-    use crate::ex_9_pkcs_padding::Pkcs7;
+    use crate::ex_09_pkcs_padding::Pkcs7;
 
     #[test]
     fn test_ex_9() {

@@ -59,7 +59,7 @@ fn decrypt_ecb(block_size: usize, oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -
             let w_len = w.len();
             let received = oracle(w);
             let longest = longest_substring(&target_ciphertext, &received);
-            if longest == w_len {
+            if longest >= w_len {
                 current_plaintext.push(i);
                 break;
             }
@@ -73,7 +73,8 @@ fn decrypt_ecb(block_size: usize, oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -
                     received,
                     target_ciphertext,
                 );
-                panic!("Not found!?");
+                // not found!?
+                return current_plaintext;
             }
         }
         //TODO.
@@ -121,7 +122,13 @@ mod test {
     // This test is quite slow.
     fn test_byte_a_time() {
         let expected = String::from_utf8(base64::decode(APPENDED_B64).unwrap()).unwrap();
-        let oracle = build_oracle(random_key().to_vec());
-        assert_eq!(expected, solve(oracle));
+        let key = random_key();
+        let oracle = build_oracle(key.to_vec());
+        assert_eq!(
+            expected,
+            solve(oracle),
+            "Something went wrong, key: {:?}",
+            key
+        );
     }
 }

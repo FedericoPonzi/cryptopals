@@ -19,14 +19,42 @@ impl Pkcs7 {
     }
 
     /// Removes PKCS7 padding.
-    pub fn remove_padding(mut plaintext: Vec<u8>) -> Vec<u8> {
+    pub fn remove_padding_unchecked(plaintext: Vec<u8>) -> Vec<u8> {
+        Self::remove_padding(plaintext).unwrap()
+    }
+
+    // Returns `Some` only if plaintext is padded with Pkcs7.
+    pub fn remove_padding(plaintext: Vec<u8>) -> Option<Vec<u8>> {
         if let Some(b) = plaintext.last() {
             if *b < 16u8 {
+                let mut ret = plaintext.clone();
                 for _ in 0..*b as usize {
-                    plaintext.pop();
+                    let is_valid = ret.pop().map(|v| v == *b).unwrap_or(false);
+                    if !is_valid {
+                        return None;
+                    }
                 }
+                return Some(ret);
             }
         }
-        plaintext
+        None
+    }
+}
+#[cfg(test)]
+mod test {
+    use crate::Pkcs7;
+
+    #[test]
+    fn test_pkcs7_padding() {
+        let padded = Pkcs7::pad(b"123", 16);
+        assert_eq!(
+            Vec::from([49, 50, 51, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13]),
+            padded
+        );
+        let unpadded = Pkcs7::remove_padding_unchecked(padded);
+        assert_eq!(Vec::from(*b"123"), unpadded);
+
+        let invalid = Pkcs7::remove_padding(Vec::from(*b"123"));
+        assert!(invalid.is_none(), "{:?}", invalid.unwrap());
     }
 }

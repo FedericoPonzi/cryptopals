@@ -79,7 +79,7 @@ impl Profile {
         s.into()
     }
     fn decrypt(key: [u8; 16], encrypted: &[u8]) -> Self {
-        String::from_utf8(Pkcs7::remove_padding(crypto::aes::ecb::decrypt(
+        String::from_utf8(Pkcs7::remove_padding_unchecked(crypto::aes::ecb::decrypt(
             &key, encrypted,
         )))
         .unwrap()
@@ -158,7 +158,7 @@ fn solve(key: &[u8; 16]) -> Vec<u8> {
 #[cfg(test)]
 mod test {
     use super::Profile;
-    use crate::ex_13_ecb_cut_and_paste::{profile_for, solve, TARGET_ROLE};
+    use crate::ex_13_ecb_cut_and_paste::{solve, TARGET_ROLE};
     use crypto::aes::random_key;
 
     #[test]

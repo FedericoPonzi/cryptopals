@@ -16,7 +16,7 @@ pub fn decrypt_with_iv(iv: &[u8; 16], key: &[u8; 16], ciphertext: &[u8]) -> Vec<
         previous.copy_from_slice(block);
         ret.append(&mut xored.to_vec());
     }
-    Pkcs7::remove_padding(ret)
+    Pkcs7::remove_padding_unchecked(ret)
 }
 
 pub fn decrypt(key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {

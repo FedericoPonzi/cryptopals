@@ -12,6 +12,11 @@ pub fn decrypt(key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {
     ret
 }
 
+pub fn pad_and_encrypt(key: &[u8; 16], plaintext: Vec<u8>) -> Vec<u8> {
+    let plaintext = crate::Pkcs7::pad(&plaintext, 16);
+    encrypt(key, &plaintext)
+}
+
 /// Encrypt using ecb mode.
 pub fn encrypt(key: &[u8; 16], plaintext: &[u8]) -> Vec<u8> {
     use crate::aes::encrypt as aes_encrypt;
@@ -24,6 +29,7 @@ pub fn encrypt(key: &[u8; 16], plaintext: &[u8]) -> Vec<u8> {
     ret
 }
 
+// Assumes oracle takes a random key as input and returns `AES-128-ECB(your-string || unknown-string, random-key)`
 pub fn find_block_size<O>(oracle: O) -> Option<usize>
 where
     O: Fn(Vec<u8>, &[u8; 16]) -> Vec<u8>,

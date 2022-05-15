@@ -1,4 +1,3 @@
-use crypto::aes::ecb::find_block_size;
 use crypto::Pkcs7;
 
 /**
@@ -61,13 +60,13 @@ fn decrypt_ecb(block_size: usize, key: &[u8; 16]) -> Vec<u8> {
         let mut extended_w = w.clone();
         extended_w.extend_from_slice(&current_plaintext);
         let target_ciphertext = oracle(w.clone(), key);
-        for i in 0..u8::MAX {
+        for i in 0..=u8::MAX {
             let mut w = extended_w.clone();
             w.push(i);
             let w_len = w.len();
-            let received = oracle(w.clone(), key);
+            let received = oracle(w, key);
             let longest = longest_substring(&target_ciphertext, &received);
-            if longest >= w_len {
+            if longest == w_len {
                 current_plaintext.push(i);
                 break;
             }
@@ -104,7 +103,7 @@ fn solve(key: &[u8; 16]) -> String {
         return "".to_string();
     }
     println!("It is ECB :)");
-    let block_len = find_block_size(oracle).expect("Block size not found!?");
+    let block_len = crypto::aes::ecb::find_block_size(oracle).expect("Block size not found!?");
     println!("Block len: {}", block_len);
     String::from_utf8_lossy(&decrypt_ecb(block_len, key)).to_string()
 }
@@ -125,6 +124,7 @@ mod test {
     use crypto::aes::random_key;
 
     #[test]
+    // This test is quite slow.
     fn test_byte_a_time() {
         let key: &[u8; 16] = &random_key();
         let expected = String::from_utf8(base64::decode(APPENDED_B64).unwrap()).unwrap();

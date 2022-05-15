@@ -50,7 +50,7 @@ impl AES {
         }
         state
     }
-    pub fn decrypt(_data: &[u8],_key: &[u8], _mode: AesMode) -> Vec<u8> {
+    pub fn decrypt(_data: &[u8], _key: &[u8], _mode: AesMode) -> Vec<u8> {
         unimplemented!()
     }
 }

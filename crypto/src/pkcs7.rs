@@ -25,19 +25,22 @@ impl Pkcs7 {
 
     // Returns `Some` only if plaintext is padded with Pkcs7.
     pub fn remove_padding(plaintext: Vec<u8>) -> Option<Vec<u8>> {
-        if let Some(b) = plaintext.last() {
-            if *b < 16u8 {
-                let mut ret = plaintext.clone();
-                for _ in 0..*b as usize {
-                    let is_valid = ret.pop().map(|v| v == *b).unwrap_or(false);
-                    if !is_valid {
-                        return None;
-                    }
-                }
-                return Some(ret);
+        if plaintext.len() == 0 {
+            return Some(plaintext);
+        }
+        let last_b = *plaintext.last().unwrap();
+        // A valid  pkcs#7 last byte should be less than 16.
+        if last_b >= 16u8 {
+            return None;
+        }
+        let mut ret = plaintext.clone();
+        for _ in 0..last_b as usize {
+            let is_valid = ret.pop().map(|v| v == last_b).unwrap_or(false);
+            if !is_valid {
+                return None;
             }
         }
-        None
+        return Some(ret);
     }
 }
 #[cfg(test)]

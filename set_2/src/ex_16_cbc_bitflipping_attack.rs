@@ -33,24 +33,91 @@
 //!
 //! Before you implement this attack, answer this question: why does CBC mode have this property?
 
-fn create_encrypted_user(comment: String, key: Vec<u8>) -> Vec<u8> {
-    let prefix = "comment1=cooking%20MCs;";
-    let suffix = ";comment2=%20like%20a%20pound%20of%20bacon";
-    let plaintext = format!("{}{}{}", prefix, comment, suffix);
-    plaintext.into_bytes()
-}
-fn is_user_admin(ciphertext: Vec<u8>, key: Vec<u8>) -> bool {
-    let decripted = "".to_string();
-    decripted
-        .split(";")
+use crypto::Pkcs7;
+const PREFIX: &[u8] = b"comment1=cooking%20MCs;";
+const SUFFIX: &[u8] = b";comment2=%20like%20a%20pound%20of%20bacon";
+
+fn build_plaintext(comment: Vec<u8>) -> Vec<u8> {
+    let escape = |comment: Vec<u8>| {
+        let as_str = String::from_utf8_lossy(&comment);
+        let res = as_str.replace(";", "").replace("=", "").into_bytes();
+        res
+    };
+    let comment_escaped = escape(comment);
+    PREFIX
+        .to_vec()
         .into_iter()
-        .any(|el| el == "admin=true")
+        .chain(comment_escaped.to_vec())
+        .chain(SUFFIX.to_vec())
+        .collect()
 }
 
-fn solve() {}
+struct UserManager {
+    key: [u8; 16],
+}
+
+impl UserManager {
+    fn create_encrypted_user(&self, comment: Vec<u8>) -> Vec<u8> {
+        let plaintext = build_plaintext(comment);
+        let padded = Pkcs7::pad(&plaintext, 16);
+        crypto::aes::cbc::encrypt(&self.key, &padded)
+    }
+
+    fn is_user_admin(&self, ciphertext: Vec<u8>) -> bool {
+        let decrypted = crypto::aes::cbc::decrypt(&self.key, &ciphertext);
+        let decrypted = String::from_utf8_lossy(&decrypted);
+        println!("{}", decrypted);
+
+        decrypted
+            .split(";")
+            .into_iter()
+            .any(|el| el == "admin=true")
+    }
+}
+
+fn solve(manager: UserManager) -> bool {
+    const BLOCK_SIZE: usize = 16;
+    let prefix_pad = BLOCK_SIZE - PREFIX.len() % BLOCK_SIZE;
+    let previous_block: usize = 16;
+    let crack = ";admin=true;";
+    // result: [prefix + AAA | AAAAAAA| AAAAAAA]
+    let msg: Vec<u8> = std::iter::repeat(b'A')
+        .take(prefix_pad + previous_block * 2)
+        .collect();
+
+    let mut ciphertext = manager.create_encrypted_user(msg.clone());
+    let flipped: Vec<u8> = std::iter::repeat(b'A')
+        .zip(crack.as_bytes())
+        .map(|(a, b)| a ^ b)
+        .collect();
+    let mut start_index = PREFIX.len() + prefix_pad;
+
+    for b in flipped {
+        ciphertext[start_index] ^= b;
+        start_index += 1;
+    }
+    manager.is_user_admin(ciphertext)
+}
 
 #[cfg(test)]
 mod test {
+    use crate::ex_16_cbc_bitflipping_attack::{solve, UserManager};
+    use crypto::aes::random_key;
+
     #[test]
-    fn test_solution() {}
+    fn test_auxillary() {
+        let key = random_key();
+        let user_manager = UserManager { key };
+        let encrypted = user_manager.create_encrypted_user("hello".into());
+        assert!(!user_manager.is_user_admin(encrypted));
+        let encrypted = user_manager.create_encrypted_user(";admin=true".into());
+        assert!(!user_manager.is_user_admin(encrypted));
+    }
+
+    #[test]
+    fn test_solution() {
+        let key = random_key();
+        let manager = UserManager { key };
+        assert!(solve(manager));
+    }
 }

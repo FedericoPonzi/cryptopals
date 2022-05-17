@@ -1,5 +1,7 @@
+use crypto::Pkcs7;
+
 fn decrypt_cbc_mode(cipherlines: &[u8], key: &[u8; 16]) -> Vec<u8> {
-    crypto::aes::cbc::decrypt_with_iv(&[0u8; 16], key, cipherlines)
+    Pkcs7::remove_padding_unchecked(crypto::aes::cbc::decrypt(key, cipherlines))
 }
 
 #[cfg(test)]

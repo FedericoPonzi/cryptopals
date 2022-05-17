@@ -92,12 +92,9 @@ fn solve(oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> String {
 }
 
 fn build_oracle(key: Vec<u8>, prefix: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + Clone {
-    /**
-    Takes a random key as input and returns
-    `AES-128-ECB(random-prefix || attacker-controlled || target-bytes, random-key)`
-    Looking good!
-     **/
-    let oracle = move |plaintext: Vec<u8>| -> Vec<u8> {
+    //Takes a random key as input and returns
+    //`AES-128-ECB(random-prefix || attacker-controlled || target-bytes, random-key)
+    move |plaintext: Vec<u8>| -> Vec<u8> {
         let decoded = base64::decode(APPENDED_B64).unwrap();
         let plaintext: Vec<u8> = prefix
             .clone()
@@ -108,8 +105,7 @@ fn build_oracle(key: Vec<u8>, prefix: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + 
         let mut k = [0; KEY_SIZE];
         k.copy_from_slice(&key.as_slice()[..KEY_SIZE]);
         crypto::aes::ecb::pad_and_encrypt(&k, plaintext)
-    };
-    return oracle;
+    }
 }
 
 #[cfg(test)]

@@ -1,4 +1,5 @@
 // For the key-expansion routine, this was super helpful: https://www.samiam.org/key-schedule.html
+use hex_literal::hex;
 
 /// An 8-bit circular rotate on a 32-bit word
 fn circular_rotate(mut word: [u8; 4]) -> [u8; 4] {

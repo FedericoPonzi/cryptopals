@@ -3,16 +3,13 @@ use crate::aes::decrypt as aes_decrypt;
 use crate::aes::encrypt as aes_encrypt;
 
 pub fn decrypt(key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {
-    let mut iv = [0u8; 16];
-    //TODO: I'm not sure why I've originally added this line - cbc by default uses a 'fake 0th ciphertext block'
-    //iv.copy_from_slice(&ciphertext[0..16]);
+    let iv = [0u8; 16];
     decrypt_with_iv(&iv, key, ciphertext)
 }
 pub fn decrypt_with_iv(iv: &[u8; 16], key: &[u8; 16], ciphertext: &[u8]) -> Vec<u8> {
     let mut ret = vec![];
     let mut previous = [0u8; 16];
     previous.copy_from_slice(iv);
-
     for block in ciphertext.chunks(16) {
         let mut buf = [0u8; 16];
         buf.copy_from_slice(&block);

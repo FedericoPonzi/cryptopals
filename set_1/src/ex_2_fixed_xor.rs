@@ -10,6 +10,7 @@ fn fixed_xor(a: Vec<u8>, b: Vec<u8>) -> Vec<u8> {
 #[cfg(test)]
 mod test {
     use crate::ex_2_fixed_xor::fixed_xor;
+    use hex_literal::hex;
 
     #[test]
     fn test_conversion() {

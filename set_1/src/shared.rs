@@ -1,3 +1,4 @@
+use maplit::hashmap;
 use std::collections::{BTreeMap, HashMap};
 use std::ops::BitXor;
 

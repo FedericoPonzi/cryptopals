@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod test {
     use crate::shared::single_byte_xor_dechiper;
+    use hex_literal::hex;
 
     #[test]
     fn test_decipher() {

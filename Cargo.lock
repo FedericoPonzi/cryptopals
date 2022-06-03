@@ -229,7 +229,20 @@ dependencies = [
  "hex-literal",
  "maplit",
  "rand",
- "set_1",
+]
+
+[[package]]
+name = "set_3"
+version = "0.1.0"
+dependencies = [
+ "aes",
+ "base64",
+ "block-modes",
+ "crypto",
+ "hex",
+ "hex-literal",
+ "maplit",
+ "rand",
 ]
 
 [[package]]

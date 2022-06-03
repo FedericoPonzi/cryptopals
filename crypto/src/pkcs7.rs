@@ -17,20 +17,30 @@ impl Pkcs7 {
         }
         ret
     }
+    pub fn pad_16(input: &[u8]) -> Vec<u8> {
+        Self::pad(input, 16)
+    }
 
     /// Removes PKCS7 padding.
     pub fn remove_padding_unchecked(plaintext: Vec<u8>) -> Vec<u8> {
         Self::remove_padding(plaintext).unwrap()
     }
-
+    pub fn is_padding_valid(plaintext: Vec<u8>) -> bool {
+        Self::remove_padding(plaintext).is_some()
+    }
     // Returns `Some` only if plaintext is padded with Pkcs7.
     pub fn remove_padding(plaintext: Vec<u8>) -> Option<Vec<u8>> {
         if plaintext.len() == 0 {
             return Some(plaintext);
         }
+        // it should have the right length
+        if plaintext.len() % 16 != 0 {
+            return None;
+        }
+
         let last_b = *plaintext.last().unwrap();
         // A valid  pkcs#7 last byte should be less than 16.
-        if last_b >= 16u8 {
+        if last_b > 16u8 || last_b <= 0 {
             return None;
         }
         let mut ret = plaintext.clone();
@@ -56,6 +66,9 @@ mod test {
         );
         let unpadded = Pkcs7::remove_padding_unchecked(padded);
         assert_eq!(Vec::from(*b"123"), unpadded);
+
+        let unpadded = Pkcs7::remove_padding_unchecked(std::iter::repeat(16).take(16).collect());
+        assert!(unpadded.is_empty());
 
         let invalid = Pkcs7::remove_padding(Vec::from(*b"123"));
         assert!(invalid.is_none(), "{:?}", invalid.unwrap());

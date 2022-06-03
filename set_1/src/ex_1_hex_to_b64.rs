@@ -7,7 +7,7 @@ pub(crate) fn convert_hex_to_b64(input: Vec<u8>) -> String {
 #[cfg(test)]
 mod test {
     use crate::ex_1_hex_to_b64::convert_hex_to_b64;
-
+    use hex_literal::hex;
     #[test]
     fn test_conversion() {
         let input = hex!("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d");

@@ -9,6 +9,7 @@
 //! 3. https://www.kavaliro.com/wp-content/uploads/2014/03/AES.pdf
 //! https://www.cryptool.org/en/cto/aes-step-by-step
 
+use log::trace;
 use modules::{add_round_key, key_expansion, sub_bytes, sub_bytes_inverse};
 use modules::{mix_columns, mix_columns_inverse};
 use modules::{shift_rows, shift_rows_inverse};
@@ -16,6 +17,7 @@ use rand::Rng;
 use std::collections::HashSet;
 
 pub mod cbc;
+pub mod ctr;
 pub mod ecb;
 mod modules;
 
@@ -41,37 +43,37 @@ pub fn encrypt(block: &[u8; 16], key: &[u8; 16]) -> [u8; 16] {
     let mut state = add_round_key(&block, &expaneded_key[0]);
     for round in 1..=ROUNDS_128 {
         state = sub_bytes(&state);
-        /*println!(
+        trace!(
             "sbox: {:?}",
             state
-                .into_iter()
+                .iter()
                 .map(|v| format!("{:02x}", v))
                 .collect::<Vec<String>>()
-        );*/
+        );
         state = shift_rows(&state);
-        /*println!(
+        trace!(
             "shift rows: {:?}",
             state
-                .into_iter()
+                .iter()
                 .map(|v| format!("{:02x}", v))
                 .collect::<Vec<String>>()
-        );*/
+        );
         state = mix_columns(&state);
-        /*println!(
+        trace!(
             "mix columns: {:?}",
             state
-                .into_iter()
+                .iter()
                 .map(|v| format!("{:02x}", v))
                 .collect::<Vec<String>>()
-        );*/
+        );
         state = add_round_key(&state, &expaneded_key[round]);
-        /*println!(
+        trace!(
             "add round key: {:?}",
             state
-                .into_iter()
+                .iter()
                 .map(|v| format!("{:02x}", v))
                 .collect::<Vec<String>>()
-        );*/
+        );
     }
     state = sub_bytes(&state);
     state = shift_rows(&state);
@@ -84,12 +86,12 @@ pub fn is_ecb_encrypted(buf: &[u8]) -> bool {
     let unique_blocks = buf.chunks(16).into_iter().collect::<HashSet<&[u8]>>().len();
     let total_blocks = buf.len() / 16;
     let duplicated_blocks = total_blocks as i64 - unique_blocks as i64;
-    println!("Duplicated blocks: {}", duplicated_blocks);
+    trace!("Duplicated blocks: {}", duplicated_blocks);
     duplicated_blocks > 0
 }
+
 pub fn random_key() -> [u8; 16] {
-    let mut rng = rand::thread_rng();
-    rng.gen()
+    rand::thread_rng().gen()
 }
 
 #[cfg(test)]

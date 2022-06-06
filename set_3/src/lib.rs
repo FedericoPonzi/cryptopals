@@ -13,3 +13,4 @@
 #![allow(unused_imports)]
 
 mod ex_17_the_cbc_padding_oracle;
+mod ex_18_ctr_stream_cipher_mode;

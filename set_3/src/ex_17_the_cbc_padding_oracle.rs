@@ -1,3 +1,4 @@
+//! https://cryptopals.com/sets/3/challenges/17
 const BLOCK_SIZE: usize = 16;
 
 /// https://en.wikipedia.org/wiki/Padding_oracle_attack

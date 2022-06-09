@@ -117,8 +117,6 @@ mod test {
 
     fn random_bytes() -> Vec<u8> {
         let n: u32 = rand::random::<u32>() % 1000 + 16;
-        let n = 1;
-        println!("random n : {}", n);
         random_bytes_n(n)
     }
     fn random_bytes_n(take: u32) -> Vec<u8> {
@@ -158,9 +156,9 @@ mod test {
         }
     }
 
-    fn test_single(n: usize) {
+    fn test_single(n: u32) {
         let key: &[u8; 16] = &random_key();
-        let random_prefix = random_bytes_n(1);
+        let random_prefix = random_bytes_n(n);
         let oracle = build_oracle(key.to_vec(), random_prefix);
         let expected = String::from_utf8(base64::decode(APPENDED_B64).unwrap()).unwrap();
         assert_eq!(expected, solve(oracle));
@@ -171,6 +169,6 @@ mod test {
         test_single(1);
         test_single(16);
         let n: u32 = rand::random::<u32>() % 1000;
-        test_single(n as usize);
+        test_single(n);
     }
 }

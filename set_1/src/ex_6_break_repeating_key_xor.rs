@@ -47,17 +47,13 @@ fn find_key_size(crypted: &[u8]) -> Vec<(usize, f32)> {
 fn find_original_key(transposed: Vec<Vec<u8>>) -> Vec<u8> {
     transposed
         .into_iter()
-        .map(|t| crate::shared::single_byte_xor_dechiper(t).2)
+        .map(|t| shared::single_byte_xor_dechiper(t).2)
         .collect()
 }
 
-fn break_repeating_key_xor(_file: PathBuf) -> (Vec<u8>, Vec<u8>) {
-    let cipherlines: Vec<&str> = include_str!("../res/ex_6.txt").lines().collect();
-    let ciphertext: String = cipherlines.join("");
-    let crypted = base64::decode(ciphertext).unwrap();
-
+fn break_repeating_key_xor(crypted: Vec<u8>) -> (Vec<u8>, Vec<u8>) {
     println!("Crypted: {:?}", crypted);
-    let keysize = find_key_size(crypted.as_slice());
+    let keysize = find_key_size(&crypted);
     println!("Found keysize: {:?}", keysize);
     for (keysize, _) in keysize.into_iter().take(3) {
         let transposed = transpose_blocks(keysize, crypted.as_slice());
@@ -94,9 +90,10 @@ mod test {
     }
     #[test]
     fn test_decipher() {
-        let mut file = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        file.push("res/ex_4.txt");
-        let received = break_repeating_key_xor(file);
+        let cipherlines: Vec<&str> = include_str!("../res/ex_6.txt").lines().collect();
+        let ciphertext: String = cipherlines.join("");
+        let crypted = base64::decode(ciphertext).unwrap();
+        let received = break_repeating_key_xor(crypted);
         assert!(String::from_utf8_lossy(received.1.as_slice())
             .starts_with("I'm back and I'm ringin' the bell"));
     }

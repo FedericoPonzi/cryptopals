@@ -27,44 +27,44 @@ pub struct RandomPrefix {
     /// Amount of bytes necessary to finish the block.
     padding_len: usize,
 }
-
+fn round(num: usize) -> usize {
+    let factor = 16f64;
+    if num == 0 {
+        return 0;
+    }
+    let num = num as f64;
+    let res = factor * (num / factor).round();
+    res as usize
+}
 /// Returns.
 /// Random prefix size.
 /// amount of bytes to finish the block
 ///
 pub fn find_random_prefix_size(oracle: impl Fn(Vec<u8>) -> Vec<u8>) -> RandomPrefix {
-    // 1. we find the size of the random prefix + padding to fill up the whole block.
-    let mut last_vec: Vec<u8> = oracle(vec![]);
-    let mut random_prefix_size = 0;
-    // found prefix size:
-    for i in 1..=128 {
-        let plaintext = std::iter::repeat(b'A').take(i).collect();
-        let ciphertext = oracle(plaintext);
-        let temp_block_size = longest_substring(&ciphertext, &last_vec);
-        if temp_block_size == 0 {
-            random_prefix_size = 1;
+    let plaintext = std::iter::repeat(b'A')
+        .take(48)
+        .chain(std::iter::repeat(b'D').take(10))
+        .collect();
+    let mut last_ciphertext = oracle(plaintext);
+    let pb: Vec<u8> = std::iter::repeat(b'A')
+        .take(48)
+        .chain(std::iter::repeat(b'B').take(1))
+        .collect();
+    let mut last_longest = round(longest_substring(&last_ciphertext, &oracle(pb)));
+    for i in (0..49).rev() {
+        let ciphertext = oracle(std::iter::repeat(b'A').take(i).collect());
+        let longest = round(longest_substring(&last_ciphertext, &ciphertext));
+        if longest < last_longest {
+            let previous_index = i + 1;
+            return RandomPrefix {
+                total_prefix_len: last_longest - (previous_index + last_longest % 16),
+                padding_len: (previous_index) % 16,
+            };
         }
-        if random_prefix_size == 0 {
-            random_prefix_size = temp_block_size;
-        } else if temp_block_size > random_prefix_size {
-            let plaintext = std::iter::repeat(b'A')
-                .take(i - 1)
-                .chain(std::iter::repeat(b'B').take(1))
-                .collect();
-            let ciphertext_replaced = oracle(plaintext);
-            let new_block_size = longest_substring(&ciphertext, &ciphertext_replaced);
-            if new_block_size == temp_block_size {
-                //println!("temp_block size: {}, i:{}, i", temp_block_size, i);
-                return RandomPrefix {
-                    total_prefix_len: temp_block_size + 1 - i,
-                    padding_len: i - 1,
-                };
-            }
-            random_prefix_size = temp_block_size;
-        }
-        last_vec = ciphertext;
+        last_longest = longest;
+        last_ciphertext = ciphertext;
     }
-    panic!("Random prefix len not found :(");
+    panic!("Random prefix not found! :( ");
 }
 
 fn solve(oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> String {
@@ -91,7 +91,7 @@ fn solve(oracle: impl Fn(Vec<u8>) -> Vec<u8> + Clone) -> String {
     .to_string()
 }
 
-fn build_oracle(key: Vec<u8>, prefix: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + Clone {
+fn build_oracle(key: [u8; 16], prefix: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + Clone {
     //Takes a random key as input and returns
     //`AES-128-ECB(random-prefix || attacker-controlled || target-bytes, random-key)
     move |plaintext: Vec<u8>| -> Vec<u8> {
@@ -102,9 +102,7 @@ fn build_oracle(key: Vec<u8>, prefix: Vec<u8>) -> impl Fn(Vec<u8>) -> Vec<u8> + 
             .chain(plaintext.into_iter().chain(decoded.into_iter()))
             .collect();
         const KEY_SIZE: usize = 16;
-        let mut k = [0; KEY_SIZE];
-        k.copy_from_slice(&key.as_slice()[..KEY_SIZE]);
-        crypto::aes::ecb::pad_and_encrypt(&k, plaintext)
+        crypto::aes::ecb::pad_and_encrypt(&key, plaintext)
     }
 }
 
@@ -115,10 +113,6 @@ mod test {
     };
     use crypto::aes::random_key;
 
-    fn random_bytes() -> Vec<u8> {
-        let n: u32 = rand::random::<u32>() % 1000 + 16;
-        random_bytes_n(n)
-    }
     fn random_bytes_n(take: u32) -> Vec<u8> {
         use rand::Rng;
         let range = rand::distributions::Uniform::from(0..u8::MAX);
@@ -132,7 +126,7 @@ mod test {
     fn test_find_block_size() {
         for _ in 0..10 {
             let n: u32 = rand::random::<u32>() % 1000;
-            let oracle = build_oracle(random_key().to_vec(), random_bytes_n(n));
+            let oracle = build_oracle(random_key(), random_bytes_n(n));
             let padd = 16 - n as usize % 16;
             assert_eq!(
                 crypto::aes::ecb::cryptanalysis::find_block_size_random_prefix(
@@ -147,19 +141,26 @@ mod test {
 
     #[test]
     fn test_random_prefix_size() {
-        for _ in 0..10 {
-            let n: u32 = rand::random::<u32>() % 1000;
-            let key: &[u8; 16] = &random_key();
+        for _ in 0..100 {
+            let n: u32 = rand::random::<u32>() % 10;
+            let key: [u8; 16] = random_key();
             let random_prefix = random_bytes_n(n);
-            let oracle = build_oracle(key.to_vec(), random_prefix);
-            assert_eq!(n as usize, find_random_prefix_size(oracle).total_prefix_len);
+            let oracle = build_oracle(key, random_prefix.clone());
+
+            let received = find_random_prefix_size(oracle);
+            assert_eq!(
+                random_prefix.len(),
+                received.total_prefix_len,
+                " Padding len: {}",
+                received.padding_len
+            );
         }
     }
 
     fn test_single(n: u32) {
-        let key: &[u8; 16] = &random_key();
+        let key: [u8; 16] = random_key();
         let random_prefix = random_bytes_n(n);
-        let oracle = build_oracle(key.to_vec(), random_prefix);
+        let oracle = build_oracle(key, random_prefix);
         let expected = String::from_utf8(base64::decode(APPENDED_B64).unwrap()).unwrap();
         assert_eq!(expected, solve(oracle));
     }

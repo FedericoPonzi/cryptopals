@@ -5,8 +5,7 @@ use std::ops::BitXor;
 // returns the length of the longest substring starting from the beginning of first and second.
 pub fn longest_substring(first: &[u8], second: &[u8]) -> usize {
     first
-        .clone()
-        .into_iter()
+        .iter()
         .zip(second)
         .take_while(|(cur, prev)| *cur == *prev)
         .count()
@@ -80,7 +79,7 @@ pub fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>, u8) {
         b'y' => 1.994,
         b'z' => 0.077
     };
-    (0x00..0xff)
+    (0x00..=0xff)
         .map(|c| {
             let decrypted: Vec<u8> = xor(input.clone(), c);
             let frequency = calculate_frequency(decrypted.clone());
@@ -171,5 +170,21 @@ mod test {
             114, 7, 121, 97, 116, 97,
         ];
         assert_eq!(received.1, expected);
+    }
+    /// Amazingly, in single_byte_xor_dechiper function I was doing (0..0xff) instead of 0..=0xff.
+    /// Meaning that 255 was missed out. It's been fun debugging.
+    #[test]
+    fn test_single_xor_decipher_regression() {
+        let buf_from_bad_key = [
+            144, 154, 158, 138, 145, 223, 147, 141, 151, 158, 154, 154, 134, 138, 157, 154, 211,
+            139, 140, 223, 153, 156, 144, 223, 144, 154, 141, 150, 155, 144, 154, 146, 151, 223,
+            145, 157,
+        ];
+        let received = single_byte_xor_dechiper(buf_from_bad_key.to_vec());
+        let expected = [
+            111, 101, 97, 117, 110, 32, 108, 114, 104, 97, 101, 101, 121, 117, 98, 101, 44, 116,
+            115, 32, 102, 99, 111, 32, 111, 101, 114, 105, 100, 111, 101, 109, 104, 32, 110, 98,
+        ];
+        assert_eq!(received.1, expected)
     }
 }

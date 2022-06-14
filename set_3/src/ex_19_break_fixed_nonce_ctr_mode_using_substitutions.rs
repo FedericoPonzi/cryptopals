@@ -61,22 +61,26 @@ mod test {
 
     #[test]
     fn test_solve() {
-        let key = crypto::aes::random_key();
-        let ciphertexts: Vec<Vec<u8>> = INDEPENDENT_PT
-            .into_iter()
-            .map(base64::decode)
-            .map(Result::unwrap)
-            .map(|v| ctr::encrypt(v, 0, key))
-            .collect();
-        let received = solve(ciphertexts);
-        assert_eq!(
-            String::from_utf8_lossy(&received[1]),
-            "coming with vivid faces"
-        );
-        assert_eq!(
-            String::from_utf8_lossy(&received[0]),
-            "i have met them at close nf day"
-        );
-        //TODO: Longer lines are not fully recovered. I should try to guess / match the last word with a dictionary.
+        for i in 0..5 {
+            let key = crypto::aes::random_key();
+            let ciphertexts: Vec<Vec<u8>> = INDEPENDENT_PT
+                .into_iter()
+                .map(base64::decode)
+                .map(Result::unwrap)
+                .map(|v| ctr::encrypt(v, 0, key))
+                .collect();
+            let received = solve(ciphertexts);
+
+            // Longer lines are not fully recovered. I should try to guess / match the last word with a dictionary.
+
+            assert_eq!(
+                String::from_utf8_lossy(&received[0]),
+                "i have met them at close nf day"
+            );
+            assert_eq!(
+                String::from_utf8_lossy(&received[1]),
+                "coming with vivid faces"
+            );
+        }
     }
 }

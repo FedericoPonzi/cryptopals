@@ -9,7 +9,7 @@ pub trait Rng {
 /// of the state vector from which future iterations are produced) allows one to predict all future
 /// iterations.
 pub struct Mt19937MersenneTwisterRng {
-    mt: [u32; N],
+    pub mt: [u32; N],
     index: usize,
     seed: u32,
 }
@@ -31,11 +31,28 @@ mod consts_32 {
     pub const UPPER_MASK: u64 = (!LOWER_MASK) & 0xFFFFFFFF;
     pub const DEFAULT_SEED: u32 = 5489;
 }
+
 use consts_32::*;
 impl Mt19937MersenneTwisterRng {
     pub fn new() -> Self {
         Self::new_seed(DEFAULT_SEED)
     }
+    pub fn new_from_state(mt: [u32; N]) -> Self {
+        Self {
+            mt,
+            index: N,
+            seed: DEFAULT_SEED,
+        }
+    }
+    pub fn clone_from_output(original: &mut Self) -> Self {
+        let mut state = [0u32; N];
+        for i in 0..N {
+            state[i] =
+                Mt1993MersenneTwisterRngClonerFromOutput::untamper(original.extract_number());
+        }
+        Self::new_from_state(state)
+    }
+
     #[inline]
     fn _u32(x: u64) -> u32 {
         let mut ret = [0u8; 4];
@@ -60,13 +77,16 @@ impl Mt19937MersenneTwisterRng {
         if self.index >= N {
             self.twist()
         }
-        let mut y = self.mt[self.index] as u64;
-        y = y ^ ((y >> U) & D);
-        y = y ^ ((y << S) & B);
-        y = y ^ ((y << T) & C);
-        y = y ^ (y >> L);
+        let y = self.mt[self.index] as u64;
         self.index += 1;
-        Self::_u32(y)
+        Self::_u32(Self::tamper(y))
+    }
+    pub fn tamper(y: u64) -> u64 {
+        let y = y ^ ((y >> U) & D);
+        let y = y ^ ((y << S) & B);
+        let y = y ^ ((y << T) & C);
+        let y = y ^ (y >> L);
+        y
     }
 
     fn twist(&mut self) {
@@ -90,9 +110,63 @@ impl Rng for Mt19937MersenneTwisterRng {
     }
 }
 
+struct Mt1993MersenneTwisterRngClonerFromOutput {}
+impl Mt1993MersenneTwisterRngClonerFromOutput {
+    pub fn untamper_shift_left(z: u32, shift: u32, mask_const: u32) -> u32 {
+        let convert_to_mask = |k| {
+            let mut retval = 0;
+            for _ in (1..=k).rev() {
+                retval = retval << 1;
+                retval = retval | 1;
+            }
+            retval
+        };
+        let block_mask = convert_to_mask(shift);
+        let mut ret = z;
+        for block_mask_shift in (0..(W - shift)).step_by(shift as usize) {
+            ret = ret ^ (((ret & (block_mask << block_mask_shift)) << shift) & mask_const);
+        }
+        ret
+    }
+
+    pub fn untamper_shift_right(z: u32, shift: u32, mask_const: u32) -> u32 {
+        let convert_to_mask = |k| {
+            let mut retval = 0;
+            for _ in (1..=k).rev() {
+                retval = retval >> 1;
+                retval = retval | 0x80000000;
+            }
+            retval
+        };
+        let block_mask = convert_to_mask(shift);
+        let mut ret = z;
+        for block_mask_shift in (0..(W - shift)).step_by(shift as usize) {
+            ret = ret ^ (((ret & (block_mask >> block_mask_shift)) >> shift) & mask_const);
+        }
+        ret
+    }
+    pub fn untamper(y: u32) -> u32 {
+        let y = Self::untamper_shift_right(y, L, 0xFFFFFFFF);
+        let y = Self::untamper_shift_left(y, T, C as u32);
+        let y = Self::untamper_shift_left(y, S, B as u32);
+        let y = Self::untamper_shift_right(y, U, D as u32);
+        y
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use crate::random::Mt19937MersenneTwisterRng;
+    use crate::random::{Mt19937MersenneTwisterRng, Mt1993MersenneTwisterRngClonerFromOutput};
+
+    #[test]
+    fn test_untamper() {
+        let y = 101;
+        let ret = Mt19937MersenneTwisterRng::tamper(y) as u32;
+        assert_eq!(
+            y as u32,
+            Mt1993MersenneTwisterRngClonerFromOutput::untamper(ret)
+        );
+    }
 
     #[test]
     fn test_to_u32() {

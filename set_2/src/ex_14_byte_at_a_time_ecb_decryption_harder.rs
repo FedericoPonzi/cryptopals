@@ -126,7 +126,9 @@ mod test {
     fn test_find_block_size() {
         for _ in 0..10 {
             let n: u32 = rand::random::<u32>() % 1000;
-            let oracle = build_oracle(random_key(), random_bytes_n(n));
+            let key = random_key();
+            let random_bytes = random_bytes_n(n);
+            let oracle = build_oracle(key, random_bytes.clone());
             let padd = 16 - n as usize % 16;
             assert_eq!(
                 crypto::aes::ecb::cryptanalysis::find_block_size_random_prefix(
@@ -134,7 +136,11 @@ mod test {
                     n as usize + padd
                 )
                 .unwrap(),
-                16
+                16,
+                "Key: {:?}\nRandom bytes:{:?}\nn:{:?}",
+                key,
+                random_bytes,
+                n,
             );
         }
     }

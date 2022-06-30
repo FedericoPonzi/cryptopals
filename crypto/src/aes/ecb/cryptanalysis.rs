@@ -23,12 +23,13 @@ pub fn find_block_size_random_prefix(
             && block_size - random_prefix_rounded_to_block_len > 8
         {
             let ret = block_size - random_prefix_rounded_to_block_len;
-            assert_eq!(
-                    ret, 16,
-                    "Something went wrong when finding the block size. Block size: {}, Random prefix: {}",
-                    block_size,random_prefix_rounded_to_block_len
+            /*assert_eq!(
+                ret, 16,
+                "Something went wrong when finding the block size. My implementation only support 16 as block size!\
+                 Block size: {}, Random prefix: {}",
+                block_size,random_prefix_rounded_to_block_len
 
-                );
+            );*/
             return Some(ret);
         }
         last_vec = ciphertext;

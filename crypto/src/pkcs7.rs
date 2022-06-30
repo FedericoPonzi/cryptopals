@@ -31,7 +31,7 @@ impl Pkcs7 {
     // Returns `Some` only if plaintext is padded with Pkcs7.
     pub fn remove_padding(plaintext: Vec<u8>) -> Option<Vec<u8>> {
         if plaintext.len() == 0 {
-            return Some(plaintext);
+            return None;
         }
         // it should have the right length
         if plaintext.len() % 16 != 0 {
@@ -72,5 +72,8 @@ mod test {
 
         let invalid = Pkcs7::remove_padding(Vec::from(*b"123"));
         assert!(invalid.is_none(), "{:?}", invalid.unwrap());
+
+        let unpadded = Pkcs7::remove_padding(vec![]);
+        assert!(unpadded.is_none(), "{:?}", unpadded);
     }
 }

@@ -61,7 +61,7 @@ mod test {
 
     #[test]
     fn test_solve() {
-        for i in 0..5 {
+        for _ in 0..5 {
             let key = crypto::aes::random_key();
             let ciphertexts: Vec<Vec<u8>> = INDEPENDENT_PT
                 .into_iter()

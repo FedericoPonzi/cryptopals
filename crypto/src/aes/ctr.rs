@@ -37,7 +37,7 @@ impl Iterator for CtrIterator {
 pub fn encrypt(plaintext: Vec<u8>, nonce: u64, key: [u8; 16]) -> Vec<u8> {
     plaintext
         .into_iter()
-        .zip(CtrIterator::new(nonce, key).into_iter())
+        .zip(CtrIterator::new(nonce, key))
         .map(|(a, b)| a ^ b)
         .collect()
 }

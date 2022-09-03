@@ -17,3 +17,44 @@
 //! current time.
 //! Write a function to check if any given password token is actually the product of an MT19937
 //! PRNG seeded with the current time.
+
+use crypto::random::{Mt19937MersenneTwisterRng, Rng};
+
+struct MT19937Iterator {
+    rng: Mt19937MersenneTwisterRng,
+    key: u16,
+}
+impl MT19937Iterator {
+    fn new(key: u16) -> Self {
+        Self {
+            rng: Mt19937MersenneTwisterRng::new_seed(key as u32),
+            key,
+        }
+    }
+}
+impl Iterator for MT19937Iterator {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(self.rng.rand() as u32 as u8)
+    }
+}
+fn encrypt(pt: &[u8], key: u16) -> Vec<u8> {
+    pt.into_iter()
+        .zip(MT19937Iterator::new(key))
+        .map(|(a, b)| a ^ b)
+        .collect()
+}
+fn decrypt(ct: &[u8], key: u16) -> Vec<u8> {
+    encrypt(ct, key)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::ex_24_create_the_mt19937_stream_cipher_and_break_it::{decrypt, encrypt};
+
+    #[test]
+    fn solve() {
+        assert_eq!(b"ciao".to_vec(), decrypt(&encrypt(b"ciao", 0xff), 0xff));
+    }
+}

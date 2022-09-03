@@ -186,4 +186,14 @@ mod test {
         .to_vec();
         assert_eq!(expected, received);
     }
+
+    #[test]
+    fn test_clone() {
+        let mut rng = Mt19937MersenneTwisterRng::new();
+        let mut received = Mt19937MersenneTwisterRng::clone_from_output(&mut rng);
+        assert_eq!(rng.mt, received.mt);
+        for _ in 0..10 {
+            assert_eq!(rng.extract_number(), received.extract_number());
+        }
+    }
 }

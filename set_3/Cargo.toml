@@ -6,11 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-base64 = "0.12.3"
-hex-literal = "0.2.1"
+base64 = "0.13.0"
+hex-literal = "0.3.4"
 maplit = "1.0.2"
 hex = "0.4.2"
-aes = "0.6.0"
-block-modes = "0.7.0"
 rand = "~0.8"
+chrono = "~0.4"
 crypto = {path = "../crypto"}

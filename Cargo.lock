@@ -366,6 +366,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "set_4"
+version = "0.1.0"
+dependencies = [
+ "base64 0.13.0",
+ "chrono",
+ "crypto",
+ "hex-literal 0.3.4",
+ "maplit",
+ "rand",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.99"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -44,6 +44,8 @@ pub fn encrypt_with_iv(iv: &[u8; 16], key: &[u8; 16], plaintext: &[u8]) -> Vec<u
 mod test {
     use crate::aes::cbc;
     use crate::aes::cbc::{encrypt, encrypt_with_iv};
+    use crate::Pkcs7;
+
     const PLAINTEXT: &[u8] = br#"The Advanced Encryption Standard (AES) 
 also known by its original name Rijndael
 is a specification for the encryption of electronic data established 
@@ -82,5 +84,30 @@ by the U.S. National Institute of Standards and Technology (NIST) in 2001"#;
             String::from_utf8_lossy(&res),
             String::from_utf8_lossy(PLAINTEXT)
         );
+    }
+
+    // IV is prefixed to the ciphertext
+    fn test_aes_cbc_decrypt_hex(key: &str, ciphertext: &str, expected: &str) {
+        let key = hex::decode(key).unwrap();
+        let encrytped = hex::decode(ciphertext).unwrap();
+        let mut key_buff = [0u8; 16];
+        key_buff.copy_from_slice(&key);
+        let mut iv_buff = [0u8; 16];
+        iv_buff.copy_from_slice(&encrytped[0..16]);
+        let mut res =
+            Pkcs7::remove_padding(cbc::decrypt_with_iv(&iv_buff, &key_buff, &encrytped)).unwrap();
+        res.drain(0..16);
+        assert_eq!(expected, String::from_utf8_lossy(&res));
+    }
+    #[test]
+    fn test_aes_cbc_decrypt() {
+        // From Cryptograph 1 on Coursera
+        let tests = [
+            ("140b41b22a29beb4061bda66b6747e14", "4ca00ff4c898d61e1edbf1800618fb2828a226d160dad07883d04e008a7897ee2e4b7465d5290d0c0e6c6822236e1daafb94ffe0c5da05d9476be028ad7c1d81", "Basic CBC mode encryption needs padding."),
+            ("140b41b22a29beb4061bda66b6747e14", "5b68629feb8606f9a6667670b75b38a5b4832d0f26e1ab7da33249de7d4afc48e713ac646ace36e872ad5fb8a512428a6e21364b0c374df45503473c5242a253", "Our implementation uses rand. IV"),
+        ];
+        for (key, ciphertext, expected) in tests {
+            test_aes_cbc_decrypt_hex(key, ciphertext, expected);
+        }
     }
 }

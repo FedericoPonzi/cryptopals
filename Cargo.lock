@@ -122,7 +122,8 @@ checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
 name = "crypto"
 version = "0.1.0"
 dependencies = [
- "base64 0.12.3",
+ "base64 0.13.0",
+ "hex",
  "log",
  "maplit",
  "rand",

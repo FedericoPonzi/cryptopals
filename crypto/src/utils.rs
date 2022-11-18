@@ -11,8 +11,16 @@ pub fn longest_substring(first: &[u8], second: &[u8]) -> usize {
         .count()
 }
 
+/// Xor a vec with another vec byte by byte
+pub fn xor_vec_on_vec(a: Vec<u8>, b: Vec<u8>) -> Vec<u8> {
+    a.into_iter()
+        .zip(b.into_iter())
+        .map(|(a1, b1)| a1 ^ b1)
+        .collect()
+}
+
 /// Xor an array of bytes with a byte
-pub fn xor<'a, T: AsRef<[u8]>>(a: T, b: u8) -> Vec<u8> {
+pub fn xor_vec_with_byte<'a, T: AsRef<[u8]>>(a: T, b: u8) -> Vec<u8> {
     a.as_ref()
         .iter()
         .enumerate()
@@ -81,7 +89,7 @@ pub fn single_byte_xor_dechiper(input: Vec<u8>) -> (f64, Vec<u8>, u8) {
     };
     (0x00..=0xff)
         .map(|c| {
-            let decrypted: Vec<u8> = xor(input.clone(), c);
+            let decrypted: Vec<u8> = xor_vec_with_byte(input.clone(), c);
             let frequency = calculate_frequency(decrypted.clone());
             // Smaller the distance, the better
             let distance = calculate_difference(frequency.clone(), letters_frequency.clone());

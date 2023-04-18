@@ -10,12 +10,15 @@ impl Pkcs7 {
     pub fn pad(input: &[u8], block_size: usize) -> Vec<u8> {
         let msg_size = input.len();
         let padding = block_size - (msg_size % block_size);
-        let mut ret = Vec::from(input);
-
-        for _ in msg_size..(msg_size + padding) {
-            ret.push(padding as u8);
-        }
-        ret
+        input
+            .iter()
+            .map(|v| *v)
+            .chain(
+                (msg_size..(msg_size + padding))
+                    .into_iter()
+                    .map(|_| padding as u8),
+            )
+            .collect()
     }
     pub fn pad_16(input: &[u8]) -> Vec<u8> {
         Self::pad(input, 16)

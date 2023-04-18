@@ -61,6 +61,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
+name = "base64"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ea22880d78093b0cbe17c89f64a7d457941e65759157ec6cb31a31d652b05e5"
+
+[[package]]
 name = "block-modes"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -122,7 +128,7 @@ checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
 name = "crypto"
 version = "0.1.0"
 dependencies = [
- "base64 0.13.0",
+ "base64 0.20.0",
  "hex",
  "log",
  "maplit",

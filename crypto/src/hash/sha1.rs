@@ -65,11 +65,11 @@ fn process_block(mut state: Sha1State, block: &[u8]) -> Sha1State {
         w[i] = w[i].rotate_left(1);
     }
 
-    let mut a = H0;
-    let mut b = H1;
-    let mut c = H2;
-    let mut d = H3;
-    let mut e = H4;
+    let mut a = state.h0;
+    let mut b = state.h1;
+    let mut c = state.h2;
+    let mut d = state.h3;
+    let mut e = state.h4;
 
     for i in 0..ROUNDS {
         let (k, f) = match i {
@@ -124,17 +124,21 @@ pub fn sha1_state_len(
 
     payload.extend(iter::repeat(0).take(padding_needed));
 
+    let message_size_in_bits_len = 8;
     // message length in bits (always a multiple of the number of bits in a character).
-    let message_size_in_bits = (message_size * 8).to_be_bytes();
+    let message_size_in_bits = ((message_size * 8) as i64).to_be_bytes();
+
+    // append ml, the original message length in bits, as a 64-bit big-endian integer.
     payload.extend(message_size_in_bits);
 
     assert_eq!(
-        (message_size + padding_needed + 1 + 8) % BLOCK_SIZE as usize,
+        (message_size + padding_needed + 1 + message_size_in_bits_len) % BLOCK_SIZE as usize,
         0
     );
 
     let mut state = state;
 
+    // Process the message in successive 512-bit chunks:
     for block in payload.chunks(BLOCK_SIZE as usize) {
         state = process_block(state, block);
     }
@@ -174,18 +178,15 @@ mod test {
             ),
             ("abc", "a9993e364706816aba3e25717850c26c9cd0d89d"),
             ("Hello, world!", "943a702d06f34599aee1f8da8ef9f7296031d699"),
-            /* TODO: this fails
             (
-
                 r#"The attack on secret-prefix SHA1 relies on the fact that you can take the ouput of SHA-1 and use it as a new starting point for SHA-1, thus taking an arbitrary SHA-1 hash and "feeding it more data"."#,
                 "83bd0a05c761efdf84eac56ad4afd91fdef620e8",
             ),
-             */
         ];
         for (input, expected) in tests {
             let received = to_hex(&sha1(input.as_bytes()));
             let expected = expected.to_string();
-            assert_eq!(received, expected);
+            assert_eq!(received, expected, "failed input: {}", input);
         }
     }
 }

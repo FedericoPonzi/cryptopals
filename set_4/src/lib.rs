@@ -7,3 +7,4 @@ mod ex_28_sha1_keyed_mac;
 mod ex_29_break_sha1_keyed_mac_length_extension;
 mod ex_30_break_md4_keyed_mac_length_extension;
 mod ex_31_implement_and_break_hmac_sha1_with_an_artificial_timing_leak;
+mod ex_32_break_hmac_sha1_with_a_slightly_less_artificial_timing_leak;

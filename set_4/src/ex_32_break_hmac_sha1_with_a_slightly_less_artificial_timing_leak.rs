@@ -1,34 +1,14 @@
+//! ## Break HMAC-SHA1 with a slightly less artificial timing leak
+//! Reduce the sleep in your "insecure_compare" until your previous solution breaks. (Try 5ms to start.)
+//! Now break it again.
 //!
-//! The psuedocode on Wikipedia should be enough. HMAC is very easy.
+//! ---
+//! I think in this case, it should be possible to break it again by sending multiple requests for
+//! the same signature, take the average, and then pick the byte which took the highest time as
+//! the next byte for the result.
 //!
-//! Using the web framework of your choosing (Sinatra, web.py, whatever), write a tiny application
-//! that has a URL that takes a "file" argument and a "signature" argument, like so:
-//!
-//! http://localhost:9000/test?file=foo&signature=46b4ec586117154dacd49d664e5d63fdc88efb51
-//!
-//! Have the server generate an HMAC key, and then verify that the "signature" on incoming requests
-//! is valid for "file", using the "==" operator to compare the valid MAC for a file with the
-//! "signature" parameter (in other words, verify the HMAC the way any normal programmer would
-//! verify it).
-//!
-//! Write a function, call it "insecure_compare", that implements the == operation by doing
-//! byte-at-a-time comparisons with early exit (ie, return false at the first non-matching byte).
-//!
-//! In the loop for "insecure_compare", add a 50ms sleep (sleep 50ms after each byte).
-//!
-//! Use your "insecure_compare" function to verify the HMACs on incoming requests, and test that
-//! the whole contraption works. Return a 500 if the MAC is invalid, and a 200 if it's OK.
-//!
-//! Using the timing leak in this application, write a program that discovers the valid MAC for any
-//! file.
-//!
-//! ### Why artificial delays?
-//!
-//! Early-exit string compares are probably the most common source of cryptographic timing leaks,
-//! but they aren't especially easy to exploit. In fact, many timing leaks (for instance, any in
-//! C, C++, Ruby, or Python) probably aren't exploitable over a wide-area network at all. To play
-//! with attacking real-world timing leaks, you have to start writing low-level timing code. We're
-//! keeping things cryptographic in these challenges.
+//! In this code I'm not averaging multiple requests for brevity, but the code is able to work up to
+//! 1 milliseconds of wait time.
 
 use actix_web::{get, web, App, HttpResponse, HttpServer, ResponseError};
 use crypto::hash::from_hex;
@@ -48,6 +28,7 @@ We're keeping things cryptographic in these challenges. ";
 const HMAC_KEY: &[u8] = b"some-secret-key";
 
 const LIMIT_FOR_TESTING: usize = 3;
+const TIMEOUT_NS: usize = 2_000_000;
 
 #[get("/test")]
 async fn verify_signature(
@@ -72,7 +53,7 @@ fn insecure_compare(a: &[u8], b: &[u8]) -> bool {
         if *byte_a != *byte_b {
             return false;
         }
-        thread::sleep(time::Duration::from_millis(50));
+        thread::sleep(time::Duration::from_nanos(TIMEOUT_NS as u64));
     }
     a.len() == b.len()
 }
@@ -118,7 +99,7 @@ where
 
     let mut current_hmac = Vec::new();
     loop {
-        let current_len = current_hmac.len();
+        let mut requests = vec![];
         for i in 0..=255u8 {
             let mut buf = current_hmac.clone();
             buf.push(i);
@@ -132,23 +113,20 @@ where
                 return buf;
             }
             let duration = start.elapsed();
-            if duration.as_millis() > (49 * buf.len()) as u128 {
-                current_hmac.push(i);
-                break;
-            }
+            requests.push((duration.as_nanos(), i));
         }
-        if current_hmac.len() == current_len {
-            panic!(
-                "Failed to find next byte:{:?}, len: {}",
-                current_hmac, current_len
-            );
+        let found = requests.iter().max_by(|a, b| a.0.cmp(&b.0)).unwrap();
+        current_hmac.push(found.1);
+        if current_hmac.len() == mac.len() {
+            return current_hmac;
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::ex_31_implement_and_break_hmac_sha1_with_an_artificial_timing_leak::{
+
+    use crate::ex_32_break_hmac_sha1_with_a_slightly_less_artificial_timing_leak::{
         find_hmac, verify_signature, FILE, HMAC_KEY, LIMIT_FOR_TESTING,
     };
     use actix_web::http::header::ContentType;

@@ -49,7 +49,8 @@ fn glue_padding(message: &[u8], guessed_key_len: usize) -> Vec<u8> {
     forged_message.extend(message_size_in_bits);
     return forged_message;
 }
-pub fn solve(
+
+fn solve(
     message: &[u8],
     target: &[u8],
     original_message_digest: Vec<u8>,

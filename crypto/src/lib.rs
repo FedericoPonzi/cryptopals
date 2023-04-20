@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 extern crate core;
 
 pub use pkcs7::Pkcs7;

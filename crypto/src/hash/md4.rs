@@ -38,12 +38,25 @@ pub fn md4_state_len(
     (result.to_vec(), state)
 }
 
+#[derive(Debug, Clone)]
 pub struct Md4State {
     a: u32,
     b: u32,
     c: u32,
     d: u32,
 }
+
+impl Md4State {
+    pub fn from_message_digest(md: &Vec<u8>) -> Self {
+        Self {
+            a: u32::from_le_bytes(md[0..4].try_into().unwrap()),
+            b: u32::from_le_bytes(md[4..8].try_into().unwrap()),
+            c: u32::from_le_bytes(md[8..12].try_into().unwrap()),
+            d: u32::from_le_bytes(md[12..16].try_into().unwrap()),
+        }
+    }
+}
+
 impl Md4State {
     fn new() -> Self {
         Self {
@@ -68,7 +81,7 @@ fn g(x: u32, y: u32, z: u32) -> u32 {
 fn h(x: u32, y: u32, z: u32) -> u32 {
     x ^ y ^ z
 }
-fn padding_needed(message_size: usize) -> usize {
+pub fn md4_padding_needed(message_size: usize) -> usize {
     const SIZE_OF_ONE: usize = mem::size_of::<u8>();
     BLOCK_SIZE - (message_size + SIZE_OF_ONE + mem::size_of::<u64>()) % BLOCK_SIZE
 }
@@ -79,7 +92,7 @@ fn padding_needed(message_size: usize) -> usize {
 /// As a result, there is at least one bit of padding, and at most 512 bits of padding.
 /// Then the length (in bits) of the message (before padding) is appended as a 64-bit block.
 fn add_padding(mut data: Vec<u8>, data_len: usize) -> Vec<u8> {
-    let required_padding = padding_needed(data_len);
+    let required_padding = md4_padding_needed(data_len);
     data.push(0x80);
     data.extend(vec![0; required_padding]);
     let data_len_bits = (data_len as u64) * 8;

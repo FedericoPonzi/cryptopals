@@ -6,9 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-base64 = "0.13.0"
-hex-literal = "0.3.4"
+base64 = "0.13"
+hex-literal = "0.3"
 maplit = "1.0.2"
 rand = "~0.8"
 chrono = "~0.4"
 crypto = {path = "../crypto"}
+actix-web = "4"
+serde = { version = "1", features = ["derive"] }

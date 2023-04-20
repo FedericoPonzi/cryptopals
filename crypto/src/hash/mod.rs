@@ -1,4 +1,4 @@
-mod md4;
+pub mod md4;
 pub mod sha1;
 
 pub fn to_hex<T: AsRef<[u8]>>(input: T) -> String {

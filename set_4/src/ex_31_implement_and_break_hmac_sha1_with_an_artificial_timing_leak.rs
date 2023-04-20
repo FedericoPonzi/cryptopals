@@ -97,15 +97,21 @@ async fn main() -> std::io::Result<()> {
 mod tests {
     use crate::ex_31_implement_and_break_hmac_sha1_with_an_artificial_timing_leak::verify_signature;
     use actix_web::http::header::ContentType;
-    use actix_web::{test, web, App};
+    use actix_web::{test, App};
 
     #[actix_web::test]
     async fn test_index_get() {
         let app = test::init_service(App::new().service(verify_signature)).await;
         let req = test::TestRequest::default()
+            .uri("/test?file=foo&signature=46b4ec586117154dacd49d664e5d63fdc88efb51")
             .insert_header(ContentType::plaintext())
             .to_request();
+        println!("{:?}", req);
         let resp = test::call_service(&app, req).await;
-        assert!(resp.status().is_success());
+        assert!(
+            resp.status().is_success(),
+            "Resp status was: {}",
+            resp.status()
+        );
     }
 }

@@ -59,21 +59,19 @@
 //! Decrypt the messages from M's vantage point as they go by.
 //!
 //! Note that you don't actually have to inject bogus parameters to make this attack work; you could just generate Ma, MA, Mb, and MB as valid DH parameters to do a generic MITM attack. But do the parameter injection attack; it's going to come up again.
+//!
+//! ------------
+//! The code is not great, but it works:
+//!   A sent me Hello, world!!
+//!   B sent me Hello, world!!
+//!   Protocol completed.
 
 use crate::ex_33_implement_diffie_hellman::{generate_pk, generate_session_key};
 use crate::{get_g, get_p};
 use num_bigint::BigUint;
-use num_traits::ToPrimitive;
-use rand::random;
-use crate::ex_34_implement_a_mitm_key_fixing_attack_on_diffie_hellman_with_parameter_injection::Message::{EndOfProtocol, PublicKey};
+use crate::ex_34_implement_a_mitm_key_fixing_attack_on_diffie_hellman_with_parameter_injection::Message::{EncryptedMsg, EndOfProtocol, PublicKey};
 
-struct Mitm {
-    p: u64,
-    g: u64,
-    a: u64,
-    b: u64,
-}
-#[derive(Ord, PartialOrd, Eq, PartialEq, Debug)]
+#[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Clone)]
 enum Message {
     PublicKey {
         p: BigUint,
@@ -89,24 +87,24 @@ enum Message {
 struct Node {
     keys: Option<(BigUint, u32)>,
     session: Option<BigUint>,
-    received_messages: Vec<String>,
+    exchanged_messages: Vec<String>,
 }
 impl Node {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Node {
             session: None,
             keys: None,
-            received_messages: vec![],
+            exchanged_messages: vec![],
         }
     }
-    fn new_w_keys() -> Self {
+    pub fn new_w_keys() -> Self {
         Node {
             session: None,
             keys: Some(generate_pk(&get_p(), &get_g())),
-            received_messages: vec![],
+            exchanged_messages: vec![],
         }
     }
-    fn handle_msg(&mut self, msg: Message) -> Message {
+    pub fn handle_msg(&mut self, msg: Message) -> Message {
         match msg {
             PublicKey {
                 p,
@@ -115,7 +113,7 @@ impl Node {
             } => self.receive_pk(p, g, other_public_key),
             Message::EncryptedMsg { iv, ct } => {
                 let msg = self.recv_msg(iv, ct);
-                if self.received_messages.len() == 1 {
+                if self.exchanged_messages.len() == 1 {
                     return self.send_msg(msg);
                 } else {
                     return EndOfProtocol;
@@ -133,14 +131,15 @@ impl Node {
             other_public_key: self.public_key(),
         }
     }
-    fn private_key(&self) -> u32 {
+    pub fn private_key(&self) -> u32 {
         self.keys.clone().unwrap().1
     }
-    fn public_key(&self) -> BigUint {
+    pub fn public_key(&self) -> BigUint {
         self.keys.clone().unwrap().0
     }
-    fn receive_pk(&mut self, p: BigUint, g: BigUint, other_public_key: BigUint) -> Message {
+    pub fn receive_pk(&mut self, p: BigUint, g: BigUint, other_public_key: BigUint) -> Message {
         if self.session.is_some() {
+            self.exchanged_messages.push("Hello, world!".to_string());
             return self.send_msg("Hello, world!".to_string());
         }
         if self.keys.is_none() {
@@ -148,14 +147,13 @@ impl Node {
         }
         self.session =
             generate_session_key(self.keys.clone().unwrap().1, &other_public_key, &p).into();
-        println!("Session key: {:?}", self.session);
         PublicKey {
             p,
             g,
             other_public_key: self.public_key(),
         }
     }
-    fn send_msg(&self, msg: String) -> Message {
+    pub fn send_msg(&self, msg: String) -> Message {
         ///     Send AES-CBC(SHA1(s)[0:16], iv=random(16), msg) + iv
         let iv = crypto::aes::random_key();
         let mut key = [0u8; 16];
@@ -166,7 +164,7 @@ impl Node {
             crypto::aes::cbc::encrypt_with_iv(&iv, &key, &crypto::Pkcs7::pad_16(msg.as_bytes()));
         Message::EncryptedMsg { iv, ct }
     }
-    fn recv_msg(&mut self, iv: [u8; 16], ct: Vec<u8>) -> String {
+    pub fn recv_msg(&mut self, iv: [u8; 16], ct: Vec<u8>) -> String {
         let mut key = [0u8; 16];
         key.copy_from_slice(
             &crypto::hash::sha1::sha1(&self.session.clone().unwrap().to_bytes_be())[..16],
@@ -175,22 +173,96 @@ impl Node {
             &iv, &key, &ct,
         ));
         let msg = String::from_utf8(msg).unwrap();
-        println!("Received: {}", msg);
-        self.received_messages.push(msg.clone());
+        //println!("Received: {}", msg);
+        self.exchanged_messages.push(msg.clone());
         msg
+    }
+}
+struct Mitm {
+    node_a: Node,
+    node_b: Node,
+}
+impl Mitm {
+    fn new() -> Self {
+        Mitm {
+            node_a: Node::new(),
+            node_b: Node::new_w_keys(),
+        }
+    }
+    fn handle_message(
+        &mut self,
+        msg: Message,
+        sender: String,
+    ) -> (Option<Message>, Option<Message>) {
+        match msg {
+            PublicKey {
+                p,
+                g,
+                other_public_key,
+            } => {
+                (if sender == "a" {
+                    (
+                        Some(self.node_a.receive_pk(p, g, other_public_key)),
+                        Some(self.node_b.send_pk()),
+                    )
+                } else {
+                    (None, Some(self.node_b.receive_pk(p, g, other_public_key)))
+                })
+            }
+            Message::EncryptedMsg { iv, ct } => {
+                if sender == "a" {
+                    let msg = self.node_a.recv_msg(iv, ct);
+                    println!("A sent me {}!", msg);
+                    (None, Some(self.node_b.send_msg(msg)))
+                } else {
+                    let msg = self.node_b.recv_msg(iv, ct);
+                    println!("B sent me {}!", msg);
+                    (Some(self.node_a.send_msg(msg)), None)
+                }
+            }
+            Message::EndOfProtocol => {
+                if sender == "a" {
+                    (None, Some(EndOfProtocol))
+                } else {
+                    (Some(EndOfProtocol), None)
+                }
+            }
+        }
     }
 }
 
 fn solve() {
     let mut a = Node::new_w_keys();
     let mut b = Node::new();
-    let mut msg = a.send_pk();
-    while msg != EndOfProtocol {
-        dbg!(&msg);
-        msg = b.handle_msg(msg);
-        dbg!(&msg);
-        msg = a.handle_msg(msg);
-    }
+    let mut mitm = Mitm::new();
+    // setup keys:
+    let mut msg_to_b = a.send_pk();
+    let (msg_to_a, msg_to_b) = mitm.handle_message(msg_to_b, "a".to_string());
+    let msg_b = b.handle_msg(msg_to_b.unwrap());
+    mitm.handle_message(msg_b, "b".to_string());
+    let msg_to_b = a.handle_msg(msg_to_a.clone().unwrap());
+    // will send msg because session is setted up:
+    let msg_to_b = a.handle_msg(msg_to_a.unwrap());
+
+    // send msg from a -> b
+    let (msg_to_a, msg_to_b) = mitm.handle_message(msg_to_b, "a".to_string());
+    assert!(msg_to_a.is_none());
+    // b responds with something
+    let msg_b = b.handle_msg(msg_to_b.unwrap());
+    let (msg_to_a, msg_to_b) = mitm.handle_message(msg_b, "b".to_string());
+    assert!(msg_to_b.is_none());
+    let msg_to_b = a.handle_msg(msg_to_a.unwrap());
+
+    // protocol is over, so a sends EndOfProtocol
+    assert_eq!(msg_to_b, EndOfProtocol);
+    let (msg_to_a, msg_to_b) = mitm.handle_message(msg_to_b, "a".to_string());
+    assert!(msg_to_a.is_none());
+    let msg_to_a = b.handle_msg(msg_to_b.unwrap());
+    assert!(msg_to_a == EndOfProtocol);
+    let (msg_to_a, msg_to_b) = mitm.handle_message(msg_to_a, "b".to_string());
+    assert_eq!(msg_to_a.clone().unwrap(), EndOfProtocol);
+    let msg = a.handle_msg(msg_to_a.unwrap()); // sends response back to a
+    assert_eq!(msg, EndOfProtocol);
     println!("Protocol completed.");
 }
 

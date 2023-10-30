@@ -1,3 +1,4 @@
+use crate::{get_g, get_p};
 /// ### Implement Diffie-Hellman
 ///
 /// For one of the most important algorithms in cryptography this exercise
@@ -23,7 +24,7 @@
 /// Ok,  that was fun, now repeat the exercise with bignums like in the real
 ///   world. Here are parameters NIST likes:
 ///
-/// ```
+/// ```markdown
 /// p:
 /// ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024
 /// e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd
@@ -49,42 +50,30 @@
 /// In reality BigUint implements modexp (modpow) already.
 use hex;
 use num_bigint::BigUint;
-use num_traits::cast::ToPrimitive;
 use rand::random;
 
-pub fn get_p() -> BigUint {
-    BigUint::from_bytes_be(
-        &hex::decode(
-            "ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca237327ffffffffffffffff",
-        )
-        .unwrap(),
-    )
-}
-fn get_g() -> BigUint {
-    BigUint::from(2u32)
-}
-
-fn generate_pk(p: BigUint, g: BigUint) -> (BigUint, u32) {
+pub fn generate_pk(p: &BigUint, g: &BigUint) -> (BigUint, u32) {
     let a: u32 = random::<u32>();
-    let A: BigUint = g.modpow(&BigUint::from(a), &p);
+    let A: BigUint = g.modpow(&BigUint::from(a), p);
     (A, a)
 }
-fn generate_session_key(a: u32, pk_b: BigUint, p: BigUint) -> BigUint {
+pub fn generate_session_key(prvkey_a: u32, pk_b: &BigUint, p: &BigUint) -> BigUint {
     // s = (B**a) % p.
-    let s = pk_b.modpow(&BigUint::from(a), &p);
+    let s = pk_b.modpow(&BigUint::from(prvkey_a), &p);
     s
 }
 
 fn diffie_hellman() {
     let p = get_p();
+    let g = get_g();
     println!("Starting");
-    let (pk_A, prv_a) = generate_pk(p.clone(), get_g());
-    println!("Generated pk_A = {}, prv_a = {}", pk_A, prv_a);
-    let (pk_B, prv_b) = generate_pk(p.clone(), get_g());
-    println!("Generated pk_B = {}, prv_b = {}", pk_B, prv_b);
-    let session_a = generate_session_key(prv_a, pk_B, p.clone());
+    let (pk_a, prv_a) = generate_pk(&p, &g);
+    println!("Generated pk_a = {}, prv_a = {}", pk_a, prv_a);
+    let (pk_b, prv_b) = generate_pk(&p, &g);
+    println!("Generated pk_b = {}, prv_b = {}", pk_b, prv_b);
+    let session_a = generate_session_key(prv_a, &pk_b, &p);
     println!("Generated session_a = {}", session_a);
-    let session_b = generate_session_key(prv_b, pk_A, p);
+    let session_b = generate_session_key(prv_b, &pk_a, &p);
     println!("Generated session_b = {}", session_b);
     assert_eq!(session_a, session_b);
 }

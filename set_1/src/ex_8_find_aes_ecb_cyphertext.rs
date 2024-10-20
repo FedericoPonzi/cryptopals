@@ -6,7 +6,7 @@ fn find_aes_block(b64input: String) -> (i64, String) {
         .lines()
         .into_iter()
         .map(|line| {
-            let repeated_blocks = base64::decode(line.clone())
+            let repeated_blocks = base64::decode(line)
                 .map(|f| count_repeated_blocks(&f))
                 .unwrap();
             (repeated_blocks, line)

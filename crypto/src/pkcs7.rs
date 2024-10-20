@@ -26,8 +26,10 @@ impl Pkcs7 {
 
     /// Removes PKCS7 padding.
     pub fn remove_padding_unchecked(plaintext: Vec<u8>) -> Vec<u8> {
-        Self::remove_padding(plaintext).unwrap()
+        let as_string = String::from_utf8_lossy(&plaintext).to_string();
+        Self::remove_padding(plaintext).expect(&format!("Failed to remove padding: {}", as_string))
     }
+
     pub fn is_padding_valid(plaintext: Vec<u8>) -> bool {
         Self::remove_padding(plaintext).is_some()
     }

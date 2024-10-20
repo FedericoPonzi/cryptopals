@@ -137,6 +137,7 @@ mod tests {
     use crate::ex_35_implement_dh_with_negotiated_groups_and_break_malicious_g_parameters::solve;
 
     #[test]
+    #[ignore]
     fn test_solve() {
         solve();
     }

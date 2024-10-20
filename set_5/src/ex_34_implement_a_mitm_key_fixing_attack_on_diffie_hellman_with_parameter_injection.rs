@@ -72,7 +72,7 @@ use num_bigint::BigUint;
 use crate::ex_34_implement_a_mitm_key_fixing_attack_on_diffie_hellman_with_parameter_injection::Message::{EncryptedMsg, EndOfProtocol, PublicKey};
 
 #[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Clone)]
-enum Message {
+pub enum Message {
     PublicKey {
         p: BigUint,
         g: BigUint,
@@ -84,7 +84,7 @@ enum Message {
     },
     EndOfProtocol,
 }
-struct Node {
+pub struct Node {
     keys: Option<(BigUint, u32)>,
     session: Option<BigUint>,
     exchanged_messages: Vec<String>,
@@ -101,6 +101,13 @@ impl Node {
         Node {
             session: None,
             keys: Some(generate_pk(&get_p(), &get_g())),
+            exchanged_messages: vec![],
+        }
+    }
+    pub fn new_w_keys_with_group(group: BigUint) -> Self {
+        Node {
+            session: None,
+            keys: Some(generate_pk(&get_p(), &group)),
             exchanged_messages: vec![],
         }
     }

@@ -2,6 +2,9 @@ use num_bigint::BigUint;
 
 mod ex_33_implement_diffie_hellman;
 mod ex_34_implement_a_mitm_key_fixing_attack_on_diffie_hellman_with_parameter_injection;
+mod ex_35_implement_dh_with_negotiated_groups_and_break_malicious_g_parameters;
+mod ex_36_implement_secure_remote_password_srp;
+
 pub fn get_p() -> BigUint {
     BigUint::from_bytes_be(
         &hex::decode(
